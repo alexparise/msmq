@@ -1,6 +1,6 @@
 <?php
 
-namespace Aztech\Rpc;
+namespace Aztech\Rpc\Pdu\ConnectionOriented;
 
 use Rhumsaa\Uuid\Uuid;
 

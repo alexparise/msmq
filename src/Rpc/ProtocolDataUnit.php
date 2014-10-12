@@ -2,56 +2,40 @@
 
 namespace Aztech\Rpc;
 
-interface ProtocolDataUnit extends WriteVisitable
+interface ProtocolDataUnit
 {
 
-    const TYPE_REQUEST              = 0x00;
+    const PFC_FIRST_FRAG        = 0x01;
 
-    const TYPE_PING                 = 0x01;
+    const PFC_LAST_FRAG         = 0x02;
 
-    const TYPE_RESPONSE             = 0x02;
+    const PFC_PENDING_CANCEL    = 0x04;
 
-    const TYPE_FAULT                = 0x03;
+    const PFC_RESERVED_1        = 0x08;
 
-    const TYPE_WORKING              = 0x04;
+    const PFC_CONC_MPX          = 0x10;
 
-    const TYPE_NOCALL               = 0x05;
+    const PFC_DID_NOT_EXECUTE   = 0x20;
 
-    const TYPE_REJECT               = 0x06;
+    const PFC_MAYBE             = 0x40;
 
-    const TYPE_ACK                  = 0x07;
+    const PFC_OBJECT_UUID       = 0x80;
 
-    const TYPE_CL_CANCEL            = 0x08;
+    /**
+     *
+     * @return PduFieldCollection
+     */
+    public function getHeaders();
 
-    const TYPE_FACK                 = 0x09;
-
-    const TYPE_CANCEL_ACK           = 0x0a;
-
-    const TYPE_BIND                 = 0x0b;
-
-    const TYPE_BIND_ACK             = 0x0c;
-
-    const TYPE_BIND_NACK            = 0x0d;
-
-    const TYPE_ALTER_CONTEXT        = 0x0e;
-
-    const TYPE_ALTER_CONTEXT_RESP   = 0x0f;
-
-    const TYPE_SHUTDOWN             = 0x11;
-
-    const TYPE_CO_CANCEL            = 0x12;
-
-    const TYPE_ORPHANED             = 0x13;
-
-    public function getType();
-
-    public function getHeader();
-
-    public function hasBody();
-
+    /**
+     *
+     * @return string
+     */
     public function getBody();
 
-    public function hasAuthVerifier();
-
-    public function getAuthVerifier();
+    /**
+     *
+     * @return AuthenticationVerifier
+     */
+    public function getVerifier();
 }

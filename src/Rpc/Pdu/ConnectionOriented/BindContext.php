@@ -1,6 +1,6 @@
 <?php
 
-namespace Aztech\Rpc;
+namespace Aztech\Rpc\Pdu\ConnectionOriented;
 
 use Rhumsaa\Uuid\Uuid;
 
@@ -12,11 +12,6 @@ class BindContext
     public function __construct()
     {
         $this->items = [];
-    }
-
-    public function getContextId()
-    {
-        return $this->contextId;
     }
 
     /**

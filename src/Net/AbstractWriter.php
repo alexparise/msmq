@@ -5,14 +5,20 @@ namespace Aztech\Net;
 abstract class AbstractWriter implements Writer
 {
 
-    private $machineByteOrder;
+    private $byteOrder;
 
-    public function __construct()
+    public function __construct($byteOrder = ByteOrder::MACHINE)
     {
-        $machineValue = pack('L', 4294901760);
-        $littleEndianValue = pack('V', 4294901760);
+        $this->byteOrder = $byteOrder;
+    }
 
-        $this->machineByteOrder = ($machineValue == $littleEndianValue) ? ByteOrder::LITTLE_ENDIAN : ByteOrder::BIG_ENDIAN;
+    private function signedToUnsignedInt($value, $maxValue)
+    {
+        if ($value > $maxValue) {
+            $value = $maxValue;
+        }
+
+        return $value;
     }
 
     public function writeChr($char)
@@ -20,40 +26,54 @@ abstract class AbstractWriter implements Writer
         return $this->write(chr($char));
     }
 
-    public function writeInt16($value, $byteOrder = ByteOrder::LITTLE_ENDIAN)
+    public function writeInt8($value)
     {
-        $format = ByteOrder::getPackFormat($byteOrder, ByteOrder::FMT_INT_16);
+        return $this->writeUInt8($this->signedToUnsignedInt($value, DataTypes::INT8_MAX));
+    }
+
+    public function writeInt16($value)
+    {
+        return $this->writeUInt16($this->signedToUnsignedInt($value, DataTypes::INT64_MAX));
+    }
+
+    public function writeInt32($value)
+    {
+        return $this->writeUInt32($this->signedToUnsignedInt($value, DataTypes::INT32_MAX));
+    }
+
+    public function writeInt64($value)
+    {
+        return $this->writeUInt64($this->signedToUnsignedInt($value, DataTypes::INT64_MAX));
+    }
+
+    public function writeUInt8($value)
+    {
+        $format = ByteOrder::getPackFormat(ByteOrder::BIG_ENDIAN, ByteOrder::FMT_UINT_16);
+
+        return $this->write(hex2bin(substr(bin2hex(pack($format, $value)), 2)));
+    }
+
+    public function writeUInt16($value)
+    {
+        $format = ByteOrder::getPackFormat($this->byteOrder, ByteOrder::FMT_UINT_16);
 
         return $this->write(pack($format, $value));
     }
 
-    public function writeInt32($value, $byteOrder = ByteOrder::LITTLE_ENDIAN)
+    public function writeUInt32($value)
     {
-        $format = ByteOrder::getPackFormat($byteOrder, ByteOrder::FMT_INT_32);
+        $format = ByteOrder::getPackFormat($this->byteOrder, ByteOrder::FMT_UINT_32);
 
         return $this->write(pack($format, $value));
     }
 
-    public function writeUInt16($value, $byteOrder = ByteOrder::LITTLE_ENDIAN)
+    public function writeUInt64($value)
     {
-        $format = ByteOrder::getPackFormat($byteOrder, ByteOrder::FMT_UINT_16);
-
-        return $this->write(pack($format, $value));
+        throw new \BadMethodCallException('Not implemented.');
     }
 
-    public function writeUInt32($value, $byteOrder = ByteOrder::LITTLE_ENDIAN)
+    public function writeHex($value, $size = 0)
     {
-        $format = ByteOrder::getPackFormat($byteOrder, ByteOrder::FMT_UINT_32);
-
-        return $this->write(pack($format, $value));
-    }
-
-    public function writeHex($value, $size = 0, $byteOrder = ByteOrder::LITTLE_ENDIAN)
-    {
-        if ($byteOrder == ByteOrder::MACHINE) {
-            $byteOrder = $this->machineByteOrder;
-        }
-
         $format = ($byteOrder == ByteOrder::LITTLE_ENDIAN) ? 'H' : 'h';
 
         if ($size != 0) {

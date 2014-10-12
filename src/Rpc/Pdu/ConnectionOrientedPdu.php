@@ -2,49 +2,60 @@
 
 namespace Aztech\Rpc\Pdu;
 
+use Aztech\Net\DataTypes;
+use Aztech\Rpc\PduFieldCollection;
 use Aztech\Rpc\ProtocolDataUnit;
-use Aztech\Rpc\WriteVisitor;
+use Aztech\Rpc\Rpc;
+use Aztech\Rpc\DataRepresentationFormat;
 
-class ConnectionOrientedPdu implements ProtocolDataUnit
+abstract class ConnectionOrientedPdu implements ProtocolDataUnit
 {
 
-    private $header = null;
+    const AUTH_HEADER_SIZE = 8;
 
-    private $body = null;
+    const HEADER_SIZE = 16;
 
-    public function __construct($type)
+    const RESP_HEADER_SIZE = 8;
+
+    const FRAG_SZ = 5840;
+
+    private $flags;
+
+    private $format;
+
+    private $packetType;
+
+    public function __construct($packetType, DataRepresentationFormat $format = null)
     {
-        if (! $this->validateType($type)) {
-            throw new \InvalidArgumentException('Type is not connection oriented.');
-        }
-
-        $this->type = $type;
+        $this->format = $format ?: new DataRepresentationFormat();
+        $this->packetType = $packetType;
+        $this->flags = ProtocolDataUnit::PFC_FIRST_FRAG | ProtocolDataUnit::PFC_LAST_FRAG;
     }
 
-    private function validateType($type)
-    {
-        switch ($type) {
-            case ProtocolDataUnit::TYPE_REQUEST:
-            case ProtocolDataUnit::TYPE_RESPONSE:
-            case ProtocolDataUnit::TYPE_FAULT:
-            case $type >= ProtocolDataUnit::TYPE_BIND:
-            case $type <= ProtocolDataUnit::TYPE_ORPHANED:
-                return true;
-        }
+    abstract public function getFragmentLength();
 
-        return false;
+    abstract public function getAuthLength();
+
+    abstract public function getCallId();
+
+    public function getFormat()
+    {
+        return $this->format;
     }
 
-    public function getType()
+    public function getHeaders()
     {
-        return $this->type;
-    }
+        $headers = new PduFieldCollection();
 
-    public function accept(WriteVisitor $writer)
-    {
-        $writer->visitPdu($this);
+        $headers->add(DataTypes::UINT8, Rpc::VERSION_MAJOR);
+        $headers->add(DataTypes::UINT8, Rpc::VERSION_MINOR);
+        $headers->add(DataTypes::UINT8, $this->packetType);
+        $headers->add(DataTypes::UINT8, $this->flags);
+        $headers->add(DataTypes::UINT32, $this->format->getValue());
+        $headers->add(DataTypes::UINT16, $this->getFragmentLength());
+        $headers->add(DataTypes::UINT16, $this->getAuthLength());
+        $headers->add(DataTypes::UINT32, $this->getCallId());
 
-        $this->header->accept($writer);
-        $this->body->accept($writer);
+        return $headers;
     }
 }

@@ -47,6 +47,14 @@ class ByteOrder
      */
     public static function getPackFormat($byteOrder, $format)
     {
+        if ($byteOrder == ByteOrder::MACHINE) {
+            // Detect machine byte order
+            $machineValue = pack('L', 0xaabbccdd);
+            $littleEndianValue = pack('V', 0xaabbccdd);
+
+            $byteOrder = ($machineValue == $littleEndianValue) ? ByteOrder::LITTLE_ENDIAN : ByteOrder::BIG_ENDIAN;
+        }
+
         if (! array_key_exists($format, self::$formats)) {
             throw new \InvalidArgumentException('Unknown format');
         }

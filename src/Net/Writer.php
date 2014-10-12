@@ -14,11 +14,19 @@ interface Writer
      */
     public function writeChr($char);
 
-    public function writeInt16($value, $byteOrder = ByteOrder::LITTLE_ENDIAN);
+    public function writeInt8($value);
 
-    public function writeInt32($value, $byteOrder = ByteOrder::LITTLE_ENDIAN);
+    public function writeInt16($value);
 
-    public function writeUInt16($value, $byteOrder = ByteOrder::LITTLE_ENDIAN);
+    public function writeInt32($value);
 
-    public function writeUInt32($value, $byteOrder = ByteOrder::LITTLE_ENDIAN);
+    public function writeInt64($value);
+
+    public function writeUInt8($value);
+
+    public function writeUInt16($value);
+
+    public function writeUInt32($value);
+
+    public function writeUInt64($value);
 }

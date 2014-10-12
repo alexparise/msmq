@@ -7,13 +7,21 @@ interface Reader
 
     public function read($length = 0);
 
-    public function readInt16($byteOrder = ByteOrder::BO_MACHINE);
+    public function readInt8();
 
-    public function readInt32($byteOrder = ByteOrder::BO_MACHINE);
+    public function readInt16();
 
-    public function readUInt16($byteOrder = ByteOrder::BO_MACHINE);
+    public function readInt32();
 
-    public function readUInt32($byteOrder = ByteOrder::BO_MACHINE);
+    public function readInt64();
+
+    public function readUInt8();
+
+    public function readUInt16();
+
+    public function readUInt32();
+
+    public function readUInt64();
 
     public function getReadByteCount();
 }

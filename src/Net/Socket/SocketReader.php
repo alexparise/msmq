@@ -1,6 +1,8 @@
 <?php
 
-namespace Aztech\Net;
+namespace Aztech\Net\Socket;
+
+use Aztech\Net\AbstractReader;
 
 class SocketReader extends AbstractReader
 {
@@ -9,9 +11,11 @@ class SocketReader extends AbstractReader
 
     private $offset = 0;
 
-    public function __construct(Socket $socket)
+    public function __construct(Socket $socket, $byteOrder)
     {
         $this->socket = $socket;
+
+        parent::__construct($byteOrder);
     }
 
     /**

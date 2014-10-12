@@ -1,11 +1,8 @@
 <?php
 
-namespace Aztech\Rpc\Pdu;
+namespace Aztech\Rpc;
 
-use Aztech\Rpc\WriteVisitable;
-use Aztech\Rpc\WriteVisitor;
-
-class DataRepresentationFormat implements WriteVisitable
+class DataRepresentationFormat
 {
     const CHR_ASCII         = 0x0;
 
@@ -47,7 +44,7 @@ class DataRepresentationFormat implements WriteVisitable
 
     public function getIntType()
     {
-        return $this->intTYpe;
+        return $this->intType;
     }
 
     public function getFloatType()
@@ -55,15 +52,15 @@ class DataRepresentationFormat implements WriteVisitable
         return $this->floatType;
     }
 
+    public function getValue()
+    {
+        return ($this->intType << 32) | ($this->charType << 28) | ($this->floatType << 24);
+    }
+
     private function validate($typeName, $typeValue, $minValue, $maxValue)
     {
         if ($typeValue < $minValue || $typeValue > $maxValue) {
             throw new \InvalidArgumentException($typeName . ' is invalid.');
         }
-    }
-
-    public function accept(WriteVisitor $writer)
-    {
-        return $writer->visitDataRepresentationFormat($this);
     }
 }

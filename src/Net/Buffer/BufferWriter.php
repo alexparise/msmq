@@ -1,10 +1,10 @@
 <?php
 
-namespace Aztech\Net;
+namespace Aztech\Net\Buffer;
 
 use Aztech\Util\Text;
 
-class PacketWriter extends AbstractWriter
+class BufferWriter extends AbstractWriter
 {
     private $buffer = '';
 

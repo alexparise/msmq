@@ -5,6 +5,7 @@ namespace Aztech\Net\Socket;
 use Aztech\Net\Socket as SocketInterface;
 use Aztech\Net\SocketReader;
 use Aztech\Net\SocketWriter;
+use Aztech\Net\ByteOrder;
 
 class Socket implements SocketInterface
 {
@@ -52,17 +53,21 @@ class Socket implements SocketInterface
     }
 
     /**
-     *
-     * @return \Aztech\Net\SocketReader
+     * (non-PHPdoc)
+     * @see \Aztech\Net\Socket::getReader()
      */
     public function getReader()
     {
-        return new SocketReader($this);
+        return new SocketReader($this, ByteOrder::LITTLE_ENDIAN);
     }
 
+    /**
+     * (non-PHPdoc)
+     * @see \Aztech\Net\Socket::getWriter()
+     */
     public function getWriter()
     {
-        return new SocketWriter($this);
+        return new SocketWriter($this, ByteOrder::LITTLE_ENDIAN);
     }
 
     public function readRaw($bytes)

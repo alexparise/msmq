@@ -1,19 +1,20 @@
 <?php
 
-namespace Aztech\Net;
+namespace Aztech\Net\Buffer;
 
+use Aztech\Net\AbstractReader;
 use Aztech\Util\Text;
 
-class PacketReader extends AbstractReader
+class BufferReader extends AbstractReader
 {
 
     private $data;
 
     private $offset = 0;
 
-    public function __construct($data)
+    public function __construct($dataBuffer)
     {
-        $this->data = $data;
+        $this->data = $dataBuffer;
     }
 
     /**
@@ -50,7 +51,7 @@ class PacketReader extends AbstractReader
         return substr($this->data, $offset, $length);
     }
 
-    public function getOffset($byteOrder = self::BO_MACHINE)
+    public function getOffset()
     {
         return $this->offset;
     }
