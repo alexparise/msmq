@@ -1,11 +1,12 @@
 <?php
 
-namespace Aztech\Rpc;
+namespace Aztech\Rpc\Pdu;
 
 use Aztech\Net\ByteOrder;
 use Aztech\Net\PacketWriter;
 use Aztech\Util\Text;
 use Aztech\Net\Reader;
+use Aztech\Rpc\Rpc;
 
 class ConnectionOrientedHeader
 {
@@ -28,7 +29,7 @@ class ConnectionOrientedHeader
         return $header;
     }
 
-    private $dataRepresentation = '11000000';
+    private $dataRepresentation = '10000000';
 
     private $major = Rpc::VERSION_MAJOR;
 
