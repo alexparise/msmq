@@ -7,17 +7,12 @@ use Aztech\Rpc\PduFieldCollection;
 use Aztech\Rpc\ProtocolDataUnit;
 use Aztech\Rpc\Rpc;
 use Aztech\Rpc\DataRepresentationFormat;
+use Aztech\Rpc\AuthenticationVerifier;
 
 abstract class ConnectionOrientedPdu implements ProtocolDataUnit
 {
 
-    const AUTH_HEADER_SIZE = 8;
-
-    const HEADER_SIZE = 16;
-
-    const RESP_HEADER_SIZE = 8;
-
-    const FRAG_SZ = 5840;
+    private $callId = 1;
 
     private $flags;
 
@@ -25,43 +20,47 @@ abstract class ConnectionOrientedPdu implements ProtocolDataUnit
 
     private $packetType;
 
-    public function __construct($packetType, DataRepresentationFormat $format = null)
+    private $verifier;
+
+    public function __construct($packetType, AuthenticationVerifier $verifier = null, DataRepresentationFormat $format = null)
     {
         $this->format = $format ?: new DataRepresentationFormat();
         $this->packetType = $packetType;
         $this->flags = ProtocolDataUnit::PFC_FIRST_FRAG | ProtocolDataUnit::PFC_LAST_FRAG;
+        $this->verifier = $verifier;
     }
 
-    abstract public function getFragmentLength();
-
-    public function getAuthLength()
+    public function setCallId($id)
     {
-        $verifier = $this->getVerifier();
-        $content = $verifier->getContent();
-        
-        return strlen($content);
+        $this->callId = $id;
     }
 
-    abstract public function getCallId();
+    public function getCallId()
+    {
+        return $this->callId;
+    }
+
+    public function getFlags()
+    {
+        return $this->flags;
+    }
 
     public function getFormat()
     {
         return $this->format;
     }
 
-    public function getHeaders()
+    public function getType()
     {
-        $headers = new PduFieldCollection();
+        return $this->packetType;
+    }
 
-        $headers->add(DataTypes::UINT8, Rpc::VERSION_MAJOR);
-        $headers->add(DataTypes::UINT8, Rpc::VERSION_MINOR);
-        $headers->add(DataTypes::UINT8, $this->packetType);
-        $headers->add(DataTypes::UINT8, $this->flags);
-        $headers->add(DataTypes::UINT32, $this->format->getValue());
-        $headers->add(DataTypes::UINT16, $this->getFragmentLength());
-        $headers->add(DataTypes::UINT16, $this->getAuthLength());
-        $headers->add(DataTypes::UINT32, $this->getCallId());
-
-        return $headers;
+    /**
+     *
+     * @return AuthenticationVerifier|null
+     */
+    public function getVerifier()
+    {
+        return $this->verifier;
     }
 }

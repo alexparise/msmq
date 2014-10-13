@@ -7,62 +7,42 @@ use Aztech\Net\DataTypes;
 use Aztech\Rpc\DataRepresentationFormat;
 use Aztech\Rpc\ProtocolDataUnit;
 use Aztech\Rpc\PduType;
+use Aztech\Rpc\AuthenticationVerifier;
+use Aztech\Rpc\PduFieldCollection;
+use Aztech\Rpc\ProtocolDataUnitVisitor;
 
 class BindPdu extends ConnectionOrientedPdu
 {
 
     private $context;
 
-    private $maxTransmitFragSize = self::FRAG_SZ;
+    private $assocationGroupId = 0;
 
-    private $maxReceiveFragSize = self::FRAG_SZ;
-
-    private $assocGroupId = 0;
-
-    public function __construct(BindContext $context, DataRepresentationFormat $format = null)
+    public function __construct(BindContext $context, AuthenticationVerifier $verifier, DataRepresentationFormat $format = null)
     {
-        parent::__construct(PduType::BIND, $format);
+        parent::__construct(PduType::BIND, $verifier, $format);
 
         $this->context = $context;
+        $this->verifier = $verifier;
     }
 
-    public function getAuthLength()
+    public function getAssociationGroupId()
     {
-        return 0;
+        return $this->associationGroupId;
     }
 
-    public function getCallId()
+    public function setAssociationGroupId($id)
     {
-        return 1;
+        $this->assocationGroupId = $id;
     }
 
-    public function getFragmentLength()
+    public function getContext()
     {
-        return 5840;
+        return $this->context;
     }
 
-    public function getHeaders()
+    public function accept(ProtocolDataUnitVisitor $visitor)
     {
-        $headers = parent::getHeaders();
-
-        $headers->addField(DataTypes::UINT16, $this->maxTransmitFragSize);
-        $headers->addField(DataTypes::UINT16, $this->maxReceiveFragSize);
-        $headers->addField(DataTypes::UINT32, $this->assocGroupId);
-
-        $headers->addField(DataTypes::UINT32, $this->context->getItemCount());
-
-        foreach ($this->context->getItems() as $item) {
-            $headers->addField(DataTypes::UINT16, $item->getContextId());
-            $headers->addField(DataTypes::UINT16, $item->getTransferSyntaxCount());
-            $headers->addField(DataTypes::BYTES, $item->getAbstractSyntax()->getBytes());
-            $headers->addField(DataTypes::UINT32, $item->getVersion());
-
-            foreach ($item->getTransferSyntaxes() as $transferSyntax) {
-                $headers->addField(DataTypes::BYTES, $transferSyntax[0]->getBytes());
-                $headers->addField(DataTypes::UINT32, $transferSyntax[1]);
-            }
-        }
-        
-        return $headers;
+        return $visitor->visitBind($this);
     }
 }

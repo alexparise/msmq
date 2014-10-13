@@ -21,21 +21,14 @@ interface ProtocolDataUnit
 
     const PFC_OBJECT_UUID       = 0x80;
 
-    /**
-     *
-     * @return PduFieldCollection
-     */
-    public function getHeaders();
+    public function accept(ProtocolDataUnitVisitor $visitor);
 
-    /**
-     *
-     * @return string
-     */
-    public function getBody();
+    public function getFlags();
 
-    /**
-     *
-     * @return AuthenticationVerifier
-     */
+    public function getFormat();
+
+    public function getType();
+
     public function getVerifier();
+
 }

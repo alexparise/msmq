@@ -3,8 +3,8 @@
 namespace Aztech\Net\Socket;
 
 use Aztech\Net\Socket as SocketInterface;
-use Aztech\Net\SocketReader;
-use Aztech\Net\SocketWriter;
+use Aztech\Net\Socket\SocketReader;
+use Aztech\Net\Socket\SocketWriter;
 use Aztech\Net\ByteOrder;
 
 class Socket implements SocketInterface

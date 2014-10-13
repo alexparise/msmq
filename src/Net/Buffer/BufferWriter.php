@@ -3,6 +3,7 @@
 namespace Aztech\Net\Buffer;
 
 use Aztech\Util\Text;
+use Aztech\Net\AbstractWriter;
 
 class BufferWriter extends AbstractWriter
 {

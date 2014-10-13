@@ -1,5 +1,7 @@
 <?php
 
+namespace Aztech\Rpc;
+
 class PduFieldDefinition
 {
 
@@ -20,6 +22,10 @@ class PduFieldDefinition
 
     public function getValue()
     {
+        if (is_callable($this->value)) {
+            return call_user_func($this->value);
+        }
+
         return $this->value;
     }
 }

@@ -5,6 +5,7 @@ namespace Aztech\Ntlm\Message;
 use Aztech\Net\PacketWriter;
 use Aztech\Util\Text;
 use Aztech\Net\ByteOrder;
+use Aztech\Net\Buffer\BufferWriter;
 
 class SecurityBufferedContentBuilder
 {
@@ -24,7 +25,7 @@ class SecurityBufferedContentBuilder
 
     public function getHeaders($offset)
     {
-        $buffers = new PacketWriter();
+        $buffers = new BufferWriter();
         $offset  += (count($this->parts) * self::BUFFER_SIZE);
 
         foreach ($this->parts as $part) {
@@ -40,8 +41,8 @@ class SecurityBufferedContentBuilder
 
     public function getContent($offset)
     {
-        $buffers = new PacketWriter();
-        $content = new PacketWriter();
+        $buffers = new BufferWriter();
+        $content = new BufferWriter();
         $offset  += (count($this->parts) * self::BUFFER_SIZE);
 
         foreach ($this->parts as $part) {

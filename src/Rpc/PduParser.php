@@ -4,6 +4,6 @@ namespace Aztech\Rpc;
 
 interface PduParser
 {
-    
-    public function parse(PduFieldCollection $header, Reader $reader);
+
+    public function parse(RawProtocolDataUnit $rawPdu);
 }

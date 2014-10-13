@@ -3,6 +3,7 @@
 namespace Aztech\Net\Socket;
 
 use Aztech\Net\AbstractReader;
+use Aztech\Net\Socket as SocketInterface;
 
 class SocketReader extends AbstractReader
 {
@@ -11,7 +12,7 @@ class SocketReader extends AbstractReader
 
     private $offset = 0;
 
-    public function __construct(Socket $socket, $byteOrder)
+    public function __construct(SocketInterface $socket, $byteOrder)
     {
         $this->socket = $socket;
 

@@ -4,7 +4,7 @@ namespace Aztech\Ntlm\Message;
 
 use Aztech\Ntlm\Message;
 use Aztech\Ntlm\NTLMSSP;
-use Aztech\Net\PacketWriter;
+use Aztech\Net\Buffer\BufferWriter;
 
 class NegotiateMessage implements Message
 {
@@ -38,7 +38,7 @@ class NegotiateMessage implements Message
         $builder->add($this->domain);
         $builder->add($this->machine);
 
-        $writer = new PacketWriter();
+        $writer = new BufferWriter();
 
         $writer->writeUInt32($this->flags);
         $writer->write($builder->getHeaders($offset + 4));

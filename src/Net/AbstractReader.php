@@ -27,28 +27,28 @@ abstract class AbstractReader implements Reader
     {
         $value = $this->readUInt8();
 
-        return $this->unsignedToSigned($value, DataTypes::INT8_SZ, DataTypes::INT8_MAX);
+        return $this->unsignedToSignedInt($value, DataTypes::INT8_SZ, DataTypes::INT8_MAX);
     }
 
     public function readInt16()
     {
         $value = $this->readUInt16();
 
-        return $this->unsignedToSigned($value, DataTypes::INT16_SZ, DataTypes::INT16_MAX);
+        return $this->unsignedToSignedInt($value, DataTypes::INT16_SZ, DataTypes::INT16_MAX);
     }
 
     public function readInt32()
     {
         $value = $this->readUInt32();
 
-        return $this->unsignedToSigned($value, DataTypes::INT32_SZ, DataTypes::INT32_MAX);
+        return $this->unsignedToSignedInt($value, DataTypes::INT32_SZ, DataTypes::INT32_MAX);
     }
 
     public function readInt64()
     {
         $value = $this->readUInt64();
 
-        return $this->unsignedToSigned($value, DataTypes::INT64_SZ, DataTypes::INT64_MAX);
+        return $this->unsignedToSignedInt($value, DataTypes::INT64_SZ, DataTypes::INT64_MAX);
     }
 
     public function readUInt8()
@@ -61,7 +61,7 @@ abstract class AbstractReader implements Reader
     public function readUInt16()
     {
         $format = ByteOrder::getPackFormat($this->byteOrder, ByteOrder::FMT_UINT_16);
-        $unpacked = unpack($format, $this->read(DataTypes::INT_16_SZ));
+        $unpacked = unpack($format, $this->read(DataTypes::INT16_SZ));
 
         return reset($unpacked);
     }
@@ -69,9 +69,14 @@ abstract class AbstractReader implements Reader
     public function readUInt32()
     {
         $format = ByteOrder::getPackFormat($this->byteOrder, ByteOrder::FMT_UINT_32);
-        $unpacked = unpack($format, $this->read(DataTypes::INT_32_SZ));
+        $unpacked = unpack($format, $this->read(DataTypes::INT32_SZ));
 
         return reset($unpacked);
+    }
+
+    public function readUInt64()
+    {
+        throw new \InvalidArgumentException();
     }
 
     public function skip($count)

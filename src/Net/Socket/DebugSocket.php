@@ -3,9 +3,10 @@
 namespace Aztech\Net\Socket;
 
 use Aztech\Net\Socket as SocketInterface;
-use Aztech\Net\SocketReader;
-use Aztech\Net\SocketWriter;
+use Aztech\Net\Socket\SocketReader;
+use Aztech\Net\Socket\SocketWriter;
 use Aztech\Util\Text;
+use Aztech\Net\ByteOrder;
 
 class DebugSocket implements SocketInterface
 {
@@ -19,17 +20,17 @@ class DebugSocket implements SocketInterface
 
     public function getReader()
     {
-        return new SocketReader($this);
+        return new SocketReader($this, ByteOrder::LITTLE_ENDIAN);
     }
 
     public function getWriter()
     {
-        return new SocketWriter($this);
+        return new SocketWriter($this, ByteOrder::LITTLE_ENDIAN);
     }
 
     public function readRaw($bytes)
     {
-        $read = $this->socket->readRaw($bytes);
+        $read = $this->socket->getReader()->read($bytes);
 
         echo PHP_EOL . time() . ' : Socket read ' . strlen($read) . ' bytes of ' . $bytes . ' requested : ' . PHP_EOL;
         Text::dumpHex($read);
@@ -39,7 +40,7 @@ class DebugSocket implements SocketInterface
 
     public function writeRaw($buffer)
     {
-        $this->socket->writeRaw($buffer);
+        $this->socket->getWriter()->write($buffer);
 
         echo PHP_EOL . time() . ' : Socket wrote ' . strlen($buffer) . ' bytes : ' . PHP_EOL;
         Text::dumpHex($buffer);

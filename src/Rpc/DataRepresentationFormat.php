@@ -10,7 +10,7 @@ class DataRepresentationFormat
 
     const INT_BIG_ENDIAN    = 0x0;
 
-    const INT_LITTLE_ENDIAN = 0x1;
+    const INT_LITTLE_ENDIAN = 0x10;
 
     const FLOAT_IEEE        = 0x00;
 
@@ -29,7 +29,7 @@ class DataRepresentationFormat
     public function __construct($charType = self::CHR_ASCII, $intType = self::INT_LITTLE_ENDIAN, $floatType = self::FLOAT_IEEE)
     {
         $this->validate('Character representation', $charType, 0x0, 0x1);
-        $this->validate('Integer representation', $intType, 0x0, 0x1);
+        $this->validate('Integer representation', $intType, 0x0, 0x10);
         $this->validate('Float representation', $floatType, 0x0, 0x3);
 
         $this->charType = $charType;
@@ -54,7 +54,7 @@ class DataRepresentationFormat
 
     public function getValue()
     {
-        return ($this->intType << 32) | ($this->charType << 28) | ($this->floatType << 24);
+        return ($this->intType) | ($this->charType << 4) | ($this->floatType << 8);
     }
 
     private function validate($typeName, $typeValue, $minValue, $maxValue)

@@ -65,4 +65,14 @@ class BufferReader extends AbstractReader
     {
         return $this->data;
     }
+
+    public function reset()
+    {
+        $this->offset = 0;
+    }
+
+    public function seek($offset)
+    {
+        $this->offset = $offset;
+    }
 }

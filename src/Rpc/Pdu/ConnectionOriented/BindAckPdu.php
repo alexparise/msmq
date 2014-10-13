@@ -7,57 +7,55 @@ use Aztech\Net\DataTypes;
 use Aztech\Rpc\DataRepresentationFormat;
 use Aztech\Rpc\ProtocolDataUnit;
 use Aztech\Rpc\PduType;
+use Aztech\Rpc\PduFieldCollection;
+use Aztech\Rpc\ProtocolDataUnitVisitor;
 
-class BindResponsePdu extends ConnectionOrientedPdu
+class BindAckPdu extends ConnectionOrientedPdu
 {
 
-    private $context;
+    private $associationGroupId = 0;
 
-    private $maxTransmitFragSize = self::FRAG_SZ;
+    private $secondaryAddress = 0;
 
-    private $maxReceiveFragSize = self::FRAG_SZ;
+    private $results = [];
 
-    private $assocGroupId = 0;
-
-    public function __construct(BindContext $context, DataRepresentationFormat $format = null)
+    public function __construct(DataRepresentationFormat $format = null)
     {
-        parent::__construct(PduType::BIND_RESP, $format);
-
-        $this->context = $context;
+        parent::__construct(PduType::BIND_ACK, null, $format);
     }
 
-    public function getCallId()
+    public function accept(ProtocolDataUnitVisitor $visitor)
     {
-        return 1;
+        return $visitor->visitBindAck($this);
     }
 
-    public function getFragmentLength()
+    public function getAssociationGroupId()
     {
-        return 5840;
+        return $this->associationGroupId;
     }
 
-    public function getHeaders()
+    public function setAssociationGroupId($id)
     {
-        $headers = parent::getHeaders();
+        $this->associationGroupId = $id;
+    }
 
-        $headers->addField(DataTypes::UINT16, $this->maxTransmitFragSize);
-        $headers->addField(DataTypes::UINT16, $this->maxReceiveFragSize);
-        $headers->addField(DataTypes::UINT32, $this->assocGroupId);
+    public function getSecondaryAddress()
+    {
+        return $this->secondaryAddress;
+    }
 
-        $headers->addField(DataTypes::UINT32, $this->context->getItemCount());
+    public function setSecondaryAddress($port)
+    {
+        $this->secondaryAddress = $port;
+    }
 
-        foreach ($this->context->getItems() as $item) {
-            $headers->addField(DataTypes::UINT16, $item->getContextId());
-            $headers->addField(DataTypes::UINT16, $item->getTransferSyntaxCount());
-            $headers->addField(DataTypes::BYTES, $item->getAbstractSyntax()->getBytes());
-            $headers->addField(DataTypes::UINT32, $item->getVersion());
+    public function addResult(BindContextResultItem $result)
+    {
+        $this->results[] = $result;
+    }
 
-            foreach ($item->getTransferSyntaxes() as $transferSyntax) {
-                $headers->addField(DataTypes::BYTES, $transferSyntax[0]->getBytes());
-                $headers->addField(DataTypes::UINT32, $transferSyntax[1]);
-            }
-        }
-        
-        return $headers;
+    public function getResults()
+    {
+        return $this->results;
     }
 }

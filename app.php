@@ -2,11 +2,9 @@
 
 use Aztech\Rpc\Client as RpcClient;
 use Aztech\Ntlm\Client as NtlmClient;
-use Aztech\Ntlm\NTLMSSP;
-use Aztech\Dcom\OrpcThis;
 use Rhumsaa\Uuid\Uuid;
-use Aztech\Dcom\DcomRequest;
-use Aztech\Rpc\BindContext;
+use Aztech\Rpc\Pdu\ConnectionOriented\BindContext;
+use Aztech\Rpc\Auth\NtlmAuthenticationStrategy;
 
 require_once 'vendor/autoload.php';
 
@@ -27,7 +25,10 @@ $domain = 'WORKGROUP';
 $machine = 'VIRTWIN';
 
 $ntlmClient = new NtlmClient($user, $password, $userDomain, $domain, $machine);
-$rpcClient = new RpcClient('192.168.50.136', 135, $ntlmClient);
+$ntlmStrategy = new NtlmAuthenticationStrategy($ntlmClient);
+
+$rpcClient = new RpcClient('192.168.50.136', 135);
+$rpcClient->setAuthenticationStrategy($ntlmStrategy);
 
 $contextId = 1;
 $abstractSyntax = Uuid::fromBytes(DCOM_IOXID_RESOLVER);
@@ -39,15 +40,15 @@ $context = new BindContext();
 $context->addItem($abstractSyntax, $abstractSyntaxVersion, $transferSyntax);
 $context->addItem($abstractSyntax, $abstractSyntaxVersion, $negotiateSyntax);
 
-$rpcClient->rpcInitialize($context);
+$rpcClient->bind($context);
 
-$body = new DcomRequest(
+/*$body = new DcomRequest(
     Uuid::fromString('12080200-0000-0000-C000-000000000046'),
     [
         Uuid::fromString('00000000-0000-0000-C000-000000000046')
     ]
-);
-
+);*/
+/*
 $message = $rpcClient->rpcCoRequest($body->getContent(), 1, 0x03, Uuid::fromString('B84A9F4D-1C7D-CF11-861E-0020AF6E7C57'));
-$response = $rpcClient->rpcRequestResponse($message);
+$response = $rpcClient->rpcRequestResponse($message);*/
 
