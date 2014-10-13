@@ -3,17 +3,12 @@
 namespace Aztech\Rpc\Auth;
 
 use Aztech\Rpc\AuthenticationVerifier;
+use Aztech\Rpc\PduFieldCollection;
 
 class NtlmVerifier implements AuthenticationVerifier
 {
-
-    public function getVersion()
+    public function getFields()
     {
-        return 1;
-    }
-
-    public function getContent()
-    {
-        return "";
+        return new PduFieldCollection();
     }
 }

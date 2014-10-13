@@ -2,7 +2,7 @@
 
 namespace Aztech\Rpc;
 
-class PduType
+interface PduType
 {
     const REQUEST               = 0x00;
 
@@ -41,4 +41,5 @@ class PduType
     const SHUTDOWN              = 0x11;
 
     const CO_CANCEL             = 0x12;
+   
 }

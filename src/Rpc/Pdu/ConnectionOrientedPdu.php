@@ -34,7 +34,13 @@ abstract class ConnectionOrientedPdu implements ProtocolDataUnit
 
     abstract public function getFragmentLength();
 
-    abstract public function getAuthLength();
+    public function getAuthLength()
+    {
+        $verifier = $this->getVerifier();
+        $content = $verifier->getContent();
+        
+        return strlen($content);
+    }
 
     abstract public function getCallId();
 

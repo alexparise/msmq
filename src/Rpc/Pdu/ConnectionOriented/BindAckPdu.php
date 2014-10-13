@@ -8,7 +8,7 @@ use Aztech\Rpc\DataRepresentationFormat;
 use Aztech\Rpc\ProtocolDataUnit;
 use Aztech\Rpc\PduType;
 
-class BindPdu extends ConnectionOrientedPdu
+class BindResponsePdu extends ConnectionOrientedPdu
 {
 
     private $context;
@@ -21,14 +21,9 @@ class BindPdu extends ConnectionOrientedPdu
 
     public function __construct(BindContext $context, DataRepresentationFormat $format = null)
     {
-        parent::__construct(PduType::BIND, $format);
+        parent::__construct(PduType::BIND_RESP, $format);
 
         $this->context = $context;
-    }
-
-    public function getAuthLength()
-    {
-        return 0;
     }
 
     public function getCallId()
