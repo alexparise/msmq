@@ -4,27 +4,21 @@ namespace Aztech\Ntlm\Message;
 
 use Aztech\Ntlm\Message;
 use Aztech\Ntlm\NTLMSSP;
+use Aztech\Ntlm\ServerChallenge;
 
 class ChallengeMessage implements Message
 {
 
-    private $target;
-
-    private $flags;
-
-    private $nonce;
+    private $challenge;
 
     private $contextUpper;
 
     private $contextLower;
 
-    public function __construct($target, $flags, $nonce, $contextUpper, $contextLower)
+    public function __construct(ServerChallenge $challenge, $contextLower, $contextUpper)
     {
-        $this->target = $target;
-        $this->flags = $flags;
-        $this->nonce = $nonce;
-        $this->contextUpper = $contextUpper;
-        $this->contextLower = $contextLower;
+        $this->challenge = $challenge;
+        $this->setContext($contextLower, $contextUpper);
     }
 
     public function getType()
@@ -32,19 +26,14 @@ class ChallengeMessage implements Message
         return NTLMSSP::MSG_CHALLENGE;
     }
 
-    public function getTarget()
+    public function getChallenge()
     {
-        return $this->target;
+        return $this->challenge;
     }
 
     public function getFlags()
     {
-        return $this->flags;
-    }
-
-    public function getNonce()
-    {
-        return $this->nonce;
+        return $this->challenge->getFlags();
     }
 
     public function getContextUpper()
@@ -55,6 +44,12 @@ class ChallengeMessage implements Message
     public function getContextLower()
     {
         return $this->contextLower;
+    }
+
+    public function setContext($lower, $upper)
+    {
+        $this->contextLower = $lower;
+        $this->contextUpper = $upper;
     }
 
     public function getContent($offset)

@@ -14,6 +14,13 @@ class SecurityBufferedContentBuilder
 
     private $parts = [];
 
+    private $reversed = false;
+
+    public function __construct($reversed = false)
+    {
+        $this->reversed = (bool) $reversed;
+    }
+
     public function add($part, $unicode = false, $forcedLength = false)
     {
         if ($unicode) {
@@ -28,12 +35,24 @@ class SecurityBufferedContentBuilder
         $buffers = new BufferWriter();
         $offset  += (count($this->parts) * self::BUFFER_SIZE);
 
+        if ($this->reversed) {
+            foreach ($this->parts as $part) {
+                $offset += strlen($part);
+            }
+        }
+
         foreach ($this->parts as $part) {
+            if ($this->reversed) {
+                $offset -= strlen($part);
+            }
+
             $buffers->writeUInt16(strlen($part), ByteOrder::LITTLE_ENDIAN);
             $buffers->writeUInt16(strlen($part), ByteOrder::LITTLE_ENDIAN);
             $buffers->writeUInt32($offset, ByteOrder::LITTLE_ENDIAN);
 
-            $offset += strlen($part);
+            if (! $this->reversed) {
+                $offset += strlen($part);
+            }
         }
 
         return $buffers->getBuffer();
@@ -43,9 +62,13 @@ class SecurityBufferedContentBuilder
     {
         $buffers = new BufferWriter();
         $content = new BufferWriter();
-        $offset  += (count($this->parts) * self::BUFFER_SIZE);
+        $parts = $this->parts;
 
-        foreach ($this->parts as $part) {
+        if ($this->reversed) {
+            //$parts = array_reverse($parts);
+        }
+
+        foreach ($parts as $part) {
             $content->write($part);
         }
 

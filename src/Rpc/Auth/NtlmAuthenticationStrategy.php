@@ -14,7 +14,7 @@ class NtlmAuthenticationStrategy implements AuthenticationStrategy
     private $client = null;
 
     private $verifier = null;
-    
+
     public function __construct(Client $client)
     {
         $this->client = $client;
@@ -29,14 +29,14 @@ class NtlmAuthenticationStrategy implements AuthenticationStrategy
             $challengeData = $lastResponse->getRawAuthData();
             $challenge = $this->client->parseChallenge($challengeData);
             $challengeResponse = $this->client->getAuthPacket($challenge);
-            
+
             return new NtlmChallengeResponseVerifier($context, $challengeResponse);
         }
-        
+
         if ($lastResponse && ! $this->verifier) {
-            $this->verifier = new NtlmVerifier($context, $this->client->getSessionKey());
+            $this->verifier = new NtlmVerifier($context, $this->client->getSession());
         }
-        
+
         return $this->verifier;
     }
 

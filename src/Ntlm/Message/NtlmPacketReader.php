@@ -16,16 +16,15 @@ class NtlmPacketReader extends BufferReader
 
     /**
      * Reads a string's properties from its security buffer offset and returns the string value.
-     * @param int $offset Offset of the security buffer pointing to the desired string.
      * @return string
      */
-    public function readString($length)
+    public function readString()
     {
         $len = $this->readInt16();
         $maxLen = $this->readInt16();
         $strOffset = $this->readInt32();
 
-        return $this->read($strOffset, $maxLen * 2);
+        return $this->readFrom($strOffset, $maxLen * 2);
     }
 
     /**

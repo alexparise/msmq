@@ -6,6 +6,7 @@ use Aztech\Ntlm\NTLMSSP;
 use Aztech\Net\Reader;
 use Aztech\Util\Text;
 use Aztech\Net\ByteOrder;
+use Aztech\Ntlm\ServerChallenge;
 
 class Parser
 {
@@ -33,9 +34,9 @@ class Parser
         }
     }
 
-    private function parseChallenge(Reader $packet)
+    private function parseChallenge(NtlmPacketReader $packet)
     {
-        $target = $packet->read(8);
+        $target = $packet->readString();
         $flags = $packet->readUInt32();
         $nonce = $packet->read(8);
 
@@ -44,6 +45,8 @@ class Parser
         $contextLower = $packet->readUInt32();
         $contextUpper = $packet->readUInt32();
 
-        return new ChallengeMessage($target, $flags, $nonce, $contextUpper, $contextLower);
+        $challenge = new ServerChallenge($nonce, $flags, $target);
+
+        return new ChallengeMessage($challenge, $contextLower, $contextUpper);
     }
 }

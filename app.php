@@ -19,13 +19,21 @@ define('DCOM_XFER_SYNTAX', pack('H32', '045D888AEB1CC9119FE808002B104860'));
 define('DCOM_XFER_SYNTAX_VERSION', 0x02);
 
 define('DCOM_IOXID_RESOLVER', pack('H32', 'c4fefc9960521b10bbcb00aa0021347a'));
-define('DCOM_ISYSTEMACTIVATOR', pack('H32', '1a00000000000000c000000000000046'));
+define('DCOM_ISYSTEMACTIVATOR', pack('H32', 'a001000000000000c000000000000046'));
 
 $user = 'thibaud';
 $password = 'password';
 $userDomain = 'WORKGROUP';
 $domain = 'WORKGROUP';
 $machine = 'VIRTWIN';
+
+/*
+$user = 'User';
+$password = 'Password';
+$userDomain = 'Domain';
+$domain = 'Domain';
+$machine = 'COMPUTER';
+*/
 
 $ntlmClient = new NtlmClient($user, $password, $userDomain, $domain, $machine);
 $ntlmStrategy = new NtlmAuthenticationStrategy($ntlmClient);
@@ -34,7 +42,7 @@ $rpcClient = new RpcClient('192.168.50.136', 135);
 $rpcClient->setAuthenticationStrategy($ntlmStrategy);
 
 $contextId = 1;
-$abstractSyntax = Uuid::fromBytes(DCOM_IREMOTEACTIVATION);
+$abstractSyntax = Uuid::fromBytes(DCOM_ISYSTEMACTIVATOR);
 $abstractSyntaxVersion = DCOM_IF_VERSION;
 $transferSyntax = Uuid::fromBytes(DCOM_XFER_SYNTAX);
 $transferSyntaxVersion = DCOM_XFER_SYNTAX_VERSION;

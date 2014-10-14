@@ -38,7 +38,7 @@ class Hash
         $cipherA = self::encryptDes(substr($key, 0, 8), hex2bin(self::LM_MAGIC));
         $cipherB = self::encryptDes(substr($key, 8, 8), hex2bin(self::LM_MAGIC));
 
-        return $cipherA . $cipherB . pack('H10', '0000000000');
+        return $cipherA . $cipherB;
     }
 
     public static function hashNt($password)
@@ -47,7 +47,7 @@ class Hash
 
         return hash('md4', $ntPassword, true) . pack("H10", "0000000000");
     }
-    
+
     public static function hashMd4($text)
     {
         return hash('md4', $text, true);
@@ -63,12 +63,8 @@ class Hash
             throw new \InvalidArgumentException('Nonce must be 8 bytes. [ ' . strlen($nonce) . ' bytes]');
         }
 
-        if (strlen($key) != self::NTLM_RESP_KEY_LENGTH) {
-            echo PHP_EOL . "\033[31;1mInvalid key\033[0m :" . PHP_EOL;
-            Text::dumpHex($key);
-            echo PHP_EOL;
-
-            throw new \InvalidArgumentException('Key must be 21 bytes. [ ' . strlen($key) . ' bytes]');
+        if (strlen($key) < self::NTLM_RESP_KEY_LENGTH) {
+            $key = str_pad($key, self::NTLM_RESP_KEY_LENGTH, "\000");
         }
 
         $cipher  = self::encryptDes(self::convertKey(substr($key, 0, 7)), $nonce);
@@ -80,31 +76,37 @@ class Hash
 
     public static function encryptRc4($key, $str)
     {
-    	$s = array();
-    	for ($i = 0; $i < 256; $i++) {
-    		$s[$i] = $i;
-    	}
-    	$j = 0;
-    	for ($i = 0; $i < 256; $i++) {
-    		$j = ($j + $s[$i] + ord($key[$i % strlen($key)])) % 256;
-    		$x = $s[$i];
-    		$s[$i] = $s[$j];
-    		$s[$j] = $x;
-    	}
-    	$i = 0;
-    	$j = 0;
-    	$res = '';
-    	for ($y = 0; $y < strlen($str); $y++) {
-    		$i = ($i + 1) % 256;
-    		$j = ($j + $s[$i]) % 256;
-    		$x = $s[$i];
-    		$s[$i] = $s[$j];
-    		$s[$j] = $x;
-    		$res .= $str[$y] ^ chr($s[($s[$i] + $s[$j]) % 256]);
-    	}
-    	return $res;
+        $s = array();
+
+        for ($i = 0; $i < 256; $i++) {
+            $s[$i] = $i;
+        }
+
+        $j = 0;
+
+        for ($i = 0; $i < 256; $i++) {
+            $j = ($j + $s[$i] + ord($key[$i % strlen($key)])) % 256;
+            $x = $s[$i];
+            $s[$i] = $s[$j];
+            $s[$j] = $x;
+        }
+
+        $i = 0;
+        $j = 0;
+        $res = '';
+
+        for ($y = 0; $y < strlen($str); $y++) {
+            $i = ($i + 1) % 256;
+            $j = ($j + $s[$i]) % 256;
+            $x = $s[$i];
+            $s[$i] = $s[$j];
+            $s[$j] = $x;
+            $res .= $str[$y] ^ chr($s[($s[$i] + $s[$j]) % 256]);
+        }
+
+        return $res;
     }
-    
+
     public static function encryptDes($key, $data)
     {
         // http://php.net/manual/fr/ref.hash.php#84587
@@ -114,7 +116,7 @@ class Hash
         return mcrypt_encrypt(MCRYPT_DES, $key, $data, MCRYPT_MODE_ECB, $iv);
     }
 
-    private static function convertKey($key)
+    public static function convertKey($key)
     {
         if (strlen($key) !== self::LM_MAX_LEN / 2) {
             throw new \InvalidArgumentException('Key should be exactly 7 bytes.');

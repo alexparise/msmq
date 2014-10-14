@@ -64,9 +64,24 @@ class NTLMSSP
 
     const NEGOTIATE_TARGET_INFO                 = 0x00800000;
 
+    const RESERVED4                             = 0x01000000;
+
+    const NEGOTIATE_VERSION                     = 0x02000000;
+
+    const RESERVED3                             = 0x04000000;
+
+    const RESERVED2                             = 0x08000000;
+
+    const RESERVED1                             = 0x10000000;
+
     const NEGOTIATE_128                         = 0x20000000;
 
     const NEGOTIATE_KEY_EXCH                    = 0x40000000;
 
+    /**
+     * @deprecated Use NEGOTIATE_56
+     * @var unknown
+     */
     const NEGOTIATE_80000000                    = 0x80000000;
+    const NEGOTIATE_56                          = 0x80000000;
 }

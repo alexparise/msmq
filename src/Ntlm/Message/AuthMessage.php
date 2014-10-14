@@ -9,35 +9,28 @@ use Aztech\Util\Text;
 use Aztech\Net\PacketWriter;
 use Aztech\Net\ByteOrder;
 use Aztech\Net\Buffer\BufferWriter;
+use Aztech\Ntlm\NtlmHash;
+use Aztech\Ntlm\ServerChallengeResponse;
+use Aztech\Ntlm\Session;
 
 class AuthMessage implements Message
 {
 
+    private $challenge;
+
+    private $challengeResponse;
+
     private $flags;
 
-    private $nonce;
+    private $session;
 
-    private $userDomain;
-
-    private $user;
-
-    private $machine;
-
-    private $lmHash;
-
-    private $ntHash;
-    
-    private $sessionKey = '';
-
-    public function __construct($flags, $nonce, $userDomain, $user, $machine, $lmHash, $ntHash)
+    public function __construct(ServerChallengeResponse $challengeResponse, Session $session, $flags)
     {
+        $this->challengeResponse = $challengeResponse;
+        $this->challenge = $challengeResponse->getChallenge();
         $this->flags = $flags;
-        $this->nonce = $nonce;
-        $this->userDomain = $userDomain;
-        $this->user = $user;
-        $this->machine = $machine;
-        $this->lmHash = $lmHash;
-        $this->ntHash = $ntHash;
+        $this->session = $session;
+        $this->session->setKey($this->challengeResponse->getEncryptedSessionKey());
     }
 
     public function getType()
@@ -45,74 +38,53 @@ class AuthMessage implements Message
         return NTLMSSP::MSG_AUTH;
     }
 
-    public function getFlags()
-    {
-        return $this->flags;
-    }
-    
     public function getContent($offset)
     {
         $content = '';
         $headers = '';
 
-        $lmResponse = Hash::calcNtlmResponse($this->lmHash, $this->nonce);
-        $ntResponse = Hash::calcNtlmResponse($this->ntHash, $this->nonce);
-
         $builder = new SecurityBufferedContentBuilder();
+        $sessionBuilder = new SecurityBufferedContentBuilder(false);
+        $keyBuilder = new SecurityBufferedContentBuilder();
 
-        $builder->add($lmResponse);
-        $builder->add($ntResponse);
-        $builder->add($this->userDomain, true);
-        $builder->add($this->user, true);
-        $builder->add($this->machine, true);
-        $builder->add($this->getSessionKey());
+        $builder->add($this->challengeResponse->getLmChallengeResponse());
+        $builder->add($this->challengeResponse->getNtlmChallengeResponse());
 
-        $header = $builder->getHeaders($offset += 4);
+        $sessionBuilder->add($this->session->getUserDomain(), true);
+        $sessionBuilder->add($this->session->getUser(), true);
+        $sessionBuilder->add($this->session->getMachine(), true);
+
+        $keyBuilder->add($this->session->getKey());
+
+        $sessionHeader = $sessionBuilder->getHeaders($offset += 20 + strlen($builder->getHeaders(0)));
+        $sessionContent = $sessionBuilder->getContent($offset);
+
+        $header = $builder->getHeaders($offset += strlen($sessionContent) + strlen($keyBuilder->getHeaders(0)));
         $content = $builder->getContent($offset);
+
+        $keyHeader = $keyBuilder->getHeaders($offset += strlen($content) + 8);
+        $key = $keyBuilder->getContent($offset);
 
         $writer = new BufferWriter();
 
         $writer->write($header);
+        $writer->write($sessionHeader);
+        $writer->write($keyHeader);
+
         $writer->writeUInt32($this->flags, ByteOrder::LITTLE_ENDIAN);
+        // Version info (fake sig for now)
+        $writer->writeUInt8(5);
+        $writer->writeUInt8(1);
+        $writer->writeUInt16(2600);
+        $writer->writeInt16(0);
+        $writer->writeInt8(0);
+        $writer->writeUInt8(15);
+
+        $writer->write($sessionContent);
         $writer->write($content);
+        $writer->write($key);
+
 
         return $writer->getBuffer();
-    }
-
-    private function getSecurityBuffer(& $position, $value, $isUnicode = false, $forcedLength = false)
-    {
-        $buffer = '';
-        $offset = $forcedLength;
-        $multiplier = $isUnicode ? 2 : 1;
-
-        if ($forcedLength === false) {
-            $offset = 0;
-            $position += strlen($value) * $multiplier;
-        }
-
-        $buffer .= $this->getPackedLength($value, $multiplier);
-        $buffer .= $this->getPackedInt($position + $offset + strlen($buffer) + 4);
-
-        return $buffer;
-    }
-
-    private function getPackedLength($value, $lengthMultiplier = 1)
-    {
-        return pack('v', strlen($value) * $lengthMultiplier) . pack('v', strlen($value) * $lengthMultiplier);
-    }
-
-    private function getPackedInt($value)
-    {
-        return pack('V', $value);
-    }
-
-    private function getSessionKey()
-    {
-        return $this->sessionKey;
-    }
-    
-    public function setSessionKey($key)
-    {
-        $this->sessionKey = $key;
     }
 }
