@@ -58,6 +58,16 @@ class IOxIdResolver extends CommonInterface
         // Type (tcp)
         $buffer->writeUInt16(7);
         
+        return $this->execute($this->client, 0, $in, $out);
+    }
+    
+    public function ServerAlive()
+    {
+        $op = $this->ops[__FUNCTION__];
+
+        $in = new MarshalledBuffer();
+        $out = new UnmarshallingBuffer();
+        
         return $this->execute($this->client, $op, $in, $out);
     }
 }

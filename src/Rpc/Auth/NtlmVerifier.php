@@ -24,14 +24,14 @@ class NtlmVerifier implements AuthenticationVerifier
 
     public function getSize($padding)
     {
-        return 0;
+        //return 0;
         return $this->getContent()->getSize() + $this->getHeaders($padding)->getSize();
     }
 
     public function getHeaders($padding)
     {
         $headers = new PduFieldCollection();
-        return $headers;
+        //return $headers;
 
         $headers->addField(DataTypes::UINT8, $this->context->getAuthType());
         $headers->addField(DataTypes::UINT8, $this->context->getAuthLevel());
@@ -45,7 +45,7 @@ class NtlmVerifier implements AuthenticationVerifier
     public function getContent()
     {
         $fields = new PduFieldCollection();
-        return $fields;
+        //return $fields;
 
         $fields->addField(DataTypes::UINT32, 0x0001);
         $fields->addField(DataTypes::BYTES, $this->session->getKey());

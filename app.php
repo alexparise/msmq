@@ -26,6 +26,8 @@ $rpcClient = new RpcClient('192.168.50.136', 135);
 $rpcClient->setAuthenticationStrategy($ntlmStrategy);
 
 $resolver = new IOxIdResolver($rpcClient);
+
+$resolver->ServerAlive();
 $interface = $resolver->ResolveOxId(Uuid::fromBytes(hex2bin(ISystemActivator::IID)), []);
 
 $remoteObject = $interface->createObject(Uuid::fromString("00024500-0000-0000-C000-000000000046"));

@@ -8,6 +8,7 @@ use Aztech\Rpc\AuthenticationVerifier;
 use Aztech\Rpc\DataRepresentationFormat;
 use Aztech\Rpc\PduType;
 use Aztech\Rpc\ProtocolDataUnitVisitor;
+use Aztech\Rpc\ProtocolDataUnit;
 
 class RequestPdu extends ConnectionOrientedPdu
 {
@@ -20,12 +21,23 @@ class RequestPdu extends ConnectionOrientedPdu
     
     private $body;
     
-    public function __construct(Uuid $object, $opNum, AuthenticationVerifier $verifier, DataRepresentationFormat $format = null)
+    public function __construct(Uuid $object = null, $opNum, AuthenticationVerifier $verifier, DataRepresentationFormat $format = null)
     {
         parent::__construct(PduType::REQUEST, $verifier, $format);
         
         $this->object = $object;
         $this->opNum = $opNum;
+    }
+    
+    public function getFlags()
+    {
+        $flags = parent::getFlags();
+        
+        if ($this->object) {
+            $flags |= ProtocolDataUnit::PFC_OBJECT_UUID;
+        }
+        
+        return $flags;
     }
     
     public function getBody()

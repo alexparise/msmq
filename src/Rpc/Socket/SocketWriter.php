@@ -87,7 +87,9 @@ class SocketWriter implements ProtocolDataUnitVisitor
         $fields->addField(DataTypes::UINT32, 0);
         $fields->addField(DataTypes::UINT16, $pdu->getContextId());
         $fields->addField(DataTypes::UINT16, $pdu->getOpNum());
-        //$fields->addField(DataTypes::BYTES, $pdu->getObject()->getBytes());
+        if ($pdu->getObject()) {
+            $fields->addField(DataTypes::BYTES, $pdu->getObject()->getBytes());
+        }
         $fields->addField(DataTypes::BYTES, $pdu->getBody());
         
         $this->finalizeWrite($fields, $pdu);

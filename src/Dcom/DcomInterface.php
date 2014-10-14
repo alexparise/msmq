@@ -21,7 +21,11 @@ class DcomInterface
     private $transferSyntax;
 
     private $transferSyntaxVersion;
+    
+    private $binding;
 
+    private $verifier;
+    
     public function __construct(Uuid $iid, $version, Uuid $transferSyntax, $transferSyntaxVersion)
     {
         $this->iid = $iid;
@@ -42,29 +46,33 @@ class DcomInterface
 
     protected function execute(Client $client, $op, MarshalledBuffer $in, UnmarshallingBuffer $out)
     {
-        $context = new BindContext();
-
-        $context->addItem($this->iid, $this->version, [ [
-            $this->transferSyntax,
-            $this->transferSyntaxVersion
-        ] ]);
-
-        $binding = $client->bind($context);
-        $verifier = $client->getAuthenticationStrategy()->getVerifier(
-            PduType::REQUEST,
-            $client->getAuthenticationContext(),
-            $binding
-        );
+        if (! $this->binding) {
+            $context = new BindContext();
+    
+            $context->addItem($this->iid, $this->version, [ [
+                $this->transferSyntax,
+                $this->transferSyntaxVersion
+            ] ]);
+    
+            $this->binding = $client->bind($context);
+            $this->verifier = $client->getAuthenticationStrategy()->getVerifier(
+                PduType::REQUEST,
+                $client->getAuthenticationContext(),
+                $this->binding
+            );
+            
+            $this->orpcThis = new OrpcThis(Uuid::uuid4());  
+        }
 
         $buffer = new BufferWriter();
         
-        $buffer->write((new OrpcThis(Uuid::uuid4()))->getContent());
+        //$buffer->write($this->orpcThis->getContent());
         $buffer->write($in->getBytes());
         
-        $request = new RequestPdu($this->iid, $op, $verifier);
+        $request = new RequestPdu(null, $op, $this->verifier);
         $request->setBody($buffer->getBuffer());
 
-        $response = $client->request($request);
+        $response = $client->requestResponse($request);
 
         return $response;
     }
