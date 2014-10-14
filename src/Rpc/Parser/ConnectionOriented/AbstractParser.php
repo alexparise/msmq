@@ -4,6 +4,8 @@ namespace Aztech\Rpc\Parser\ConnectionOriented;
 
 use Aztech\Rpc\DataRepresentationFormat;
 use Aztech\Net\Buffer\BufferReader;
+use Aztech\Rpc\ProtocolDataUnit;
+use Aztech\Rpc\RawProtocolDataUnit;
 
 abstract class AbstractParser
 {
@@ -24,6 +26,19 @@ abstract class AbstractParser
 
     const ALIGN_CALL_ID = 12;
 
+    private $authParser;
+    
+    public function __construct(AuthenticationParser $authParser = null)
+    {
+        $this->authParser = $authParser;
+    }
+
+    protected function parseCallId($reader, $pdu)
+    {
+        $reader->seek(self::ALIGN_CALL_ID);
+        $pdu->setCallId($reader->readUInt32());
+    }
+    
     protected function parseDataRepresentationFormat(BufferReader $reader)
     {
         $reader->seek(self::ALIGN_FORMAT);
@@ -35,5 +50,23 @@ abstract class AbstractParser
         $floatType = ($format << 20) >> 28;
 
         return new DataRepresentationFormat($charType, $intType, $floatType);
+    }
+
+    protected function parseAuth(BufferReader $reader, RawProtocolDataUnit $rawPdu)
+    {
+        $reader->seek(self::ALIGN_AUTH_LEN);
+        $authSize = $reader->readUInt16();
+        $reader->seek($rawPdu->getPacketSize() - $authSize);
+        $authValue = $reader->read($authSize);
+        
+        return $authValue;
+    }
+    
+    protected function align(BufferReader $reader)
+    {
+        // Move to end of 4-octet alignment
+        while ($reader->getReadByteCount() % 4 != 0) {
+            $reader->skip(1);
+        }
     }
 }

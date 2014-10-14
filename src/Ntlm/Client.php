@@ -7,6 +7,7 @@ use Aztech\Ntlm\Message\ChallengeMessage;
 use Aztech\Util\Hash;
 use Aztech\Util\Text;
 use Aztech\Net\PacketWriter;
+use Aztech\Net\Buffer\BufferWriter;
 
 class Client
 {
@@ -27,6 +28,14 @@ class Client
 
     private $messageParser;
 
+    private $nonce;
+    
+    private $exportedKey;
+    
+    private $encryptedKey;
+    
+    private $sessionKey;
+    
     public function __construct($user, $password, $userDomain, $domain, $machine)
     {
         $this->user = $user;
@@ -37,11 +46,6 @@ class Client
 
         $this->lmHash = Hash::hashLm($password);
         $this->ntHash = Hash::hashNt($password);
-
-        echo PHP_EOL . 'Hashes' . PHP_EOL;
-        Text::dumpHex($this->lmHash);
-        Text::dumpHex($this->ntHash);
-        echo PHP_EOL;
 
         $this->messageFactory = new MessageFactory();
         $this->messageParser = new MessageParser();
@@ -69,6 +73,8 @@ class Client
 
     public function getAuthPacket(ChallengeMessage $challenge)
     {
+        $this->nonce = $challenge->getNonce();
+        
         $user = $this->user;
         $machine = $this->machine;
         $userDomain = $this->userDomain;
@@ -77,18 +83,55 @@ class Client
 
         $header = $this->getHeader(NTLMSSP::MSG_AUTH);
         $body = $this->messageFactory->authenticate($challenge, $user, $machine, $userDomain, $lmHash, $ntHash);
+        $this->calculateExchangeKey($body->getFlags());
+        $body->setSessionKey($this->sessionKey);
+        
         $packet = $header . $body->getContent(strlen($header));
 
         return $packet;
     }
 
-    public function getAuthVerifier()
+    private function getSessionBaseKey()
     {
-        $writer = new PacketWriter();
-
-        $writer->writeUInt32(1);
-        $writer->write(hex2bin('cc94206081ea6f5b00000000'));
-
-        return $writer->getBuffer();
+        $ntResponse = Hash::calcNtlmResponse($this->ntHash, $this->nonce);
+        
+        return Hash::hashMd4($ntResponse);
+    }
+    
+    public function getSessionKey()
+    {
+        return $this->sessionKey;
+    }
+    
+    public function getSignature($flags)
+    {
+        if (! $this->encryptedKey) {
+            $this->exportedKey = openssl_random_pseudo_bytes(16);
+            $this->encryptedKey = Hash::encryptRc4($this->calculateExchangeKey($flags), $this->exportedKey);
+        }
+        
+        return $this->encryptedKey;
+    }
+    
+    public function calculateExchangeKey($flags)
+    {
+        if ($flags & NTLMSSP::NEGOTIATE_NTLM2) {
+            throw new \BadMethodCallException();
+        }
+        
+        $this->sessionKey = $this->kxKey($flags);
+    }
+    
+    private function kxKey($flags)
+    {
+        if ($flags & NTLMSSP::NEGOTIATE_LM_KEY) {
+            throw new \BadMethodCallException();
+        }
+        
+        if ($flags & NTLMSSP::REQUEST_NON_NT_SESSION_KEY) {
+            throw new \BadMethodCallException();
+        }
+        
+        return $this->getSessionBaseKey();
     }
 }

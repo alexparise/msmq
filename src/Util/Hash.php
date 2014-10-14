@@ -47,6 +47,11 @@ class Hash
 
         return hash('md4', $ntPassword, true) . pack("H10", "0000000000");
     }
+    
+    public static function hashMd4($text)
+    {
+        return hash('md4', $text, true);
+    }
 
     public static function calcNtlmResponse($key, $nonce)
     {
@@ -70,12 +75,37 @@ class Hash
         $cipher .= self::encryptDes(self::convertKey(substr($key, 7, 7)), $nonce);
         $cipher .= self::encryptDes(self::convertKey(substr($key, 14, 7)), $nonce);
 
-        Text::dumpHex($cipher);
-
         return $cipher;
     }
 
-    private static function encryptDes($key, $data)
+    public static function encryptRc4($key, $str)
+    {
+    	$s = array();
+    	for ($i = 0; $i < 256; $i++) {
+    		$s[$i] = $i;
+    	}
+    	$j = 0;
+    	for ($i = 0; $i < 256; $i++) {
+    		$j = ($j + $s[$i] + ord($key[$i % strlen($key)])) % 256;
+    		$x = $s[$i];
+    		$s[$i] = $s[$j];
+    		$s[$j] = $x;
+    	}
+    	$i = 0;
+    	$j = 0;
+    	$res = '';
+    	for ($y = 0; $y < strlen($str); $y++) {
+    		$i = ($i + 1) % 256;
+    		$j = ($j + $s[$i]) % 256;
+    		$x = $s[$i];
+    		$s[$i] = $s[$j];
+    		$s[$j] = $x;
+    		$res .= $str[$y] ^ chr($s[($s[$i] + $s[$j]) % 256]);
+    	}
+    	return $res;
+    }
+    
+    public static function encryptDes($key, $data)
     {
         // http://php.net/manual/fr/ref.hash.php#84587
         $is = mcrypt_get_iv_size(MCRYPT_DES, MCRYPT_MODE_ECB);

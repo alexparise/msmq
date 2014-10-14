@@ -5,6 +5,9 @@ use Aztech\Ntlm\Client as NtlmClient;
 use Rhumsaa\Uuid\Uuid;
 use Aztech\Rpc\Pdu\ConnectionOriented\BindContext;
 use Aztech\Rpc\Auth\NtlmAuthenticationStrategy;
+use Aztech\Rpc\Pdu\ConnectionOriented\RequestPdu;
+use Aztech\Rpc\PduType;
+use Aztech\Dcom\DcomInterface;
 
 require_once 'vendor/autoload.php';
 
@@ -12,7 +15,7 @@ define('DCOM_IREMOTEACTIVATION', pack('H32', 'B84A9F4D1C7DCF11861E0020AF6E7C57')
 define('DCOM_IF_VERSION', 0x00);
 //define('DCOM_XFER_SYNTAX', pack('H32', '045D888AEB1CC9119FE808002B104860'));
 define('DCOM_XFER_SYNTAX', pack('H32', '045D888AEB1CC9119FE808002B104860'));
-define('DCOM_XFER_SYNTAX_NEG', pack('H32', '2c1cb76c129840450300000000000000'));
+//define('DCOM_XFER_SYNTAX_NEG', pack('H32', '2c1cb76c129840450300000000000000'));
 define('DCOM_XFER_SYNTAX_VERSION', 0x02);
 
 define('DCOM_IOXID_RESOLVER', pack('H32', 'c4fefc9960521b10bbcb00aa0021347a'));
@@ -31,16 +34,16 @@ $rpcClient = new RpcClient('192.168.50.136', 135);
 $rpcClient->setAuthenticationStrategy($ntlmStrategy);
 
 $contextId = 1;
-$abstractSyntax = Uuid::fromBytes(DCOM_IOXID_RESOLVER);
+$abstractSyntax = Uuid::fromBytes(DCOM_IREMOTEACTIVATION);
 $abstractSyntaxVersion = DCOM_IF_VERSION;
-$transferSyntax = [ [ Uuid::fromBytes(DCOM_XFER_SYNTAX), DCOM_XFER_SYNTAX_VERSION ] ];
-$negotiateSyntax = [ [ Uuid::fromBytes(DCOM_XFER_SYNTAX_NEG), DCOM_XFER_SYNTAX_VERSION ] ];
+$transferSyntax = Uuid::fromBytes(DCOM_XFER_SYNTAX);
+$transferSyntaxVersion = DCOM_XFER_SYNTAX_VERSION;
 
-$context = new BindContext();
-$context->addItem($abstractSyntax, $abstractSyntaxVersion, $transferSyntax);
-$context->addItem($abstractSyntax, $abstractSyntaxVersion, $negotiateSyntax);
+//$negotiateSyntax = [ [ Uuid::fromBytes(DCOM_XFER_SYNTAX_NEG), DCOM_XFER_SYNTAX_VERSION ] ];
 
-$rpcClient->bind($context);
+$interface = new DcomInterface($abstractSyntax, $abstractSyntaxVersion, $transferSyntax, $transferSyntaxVersion);
+
+$interface->createInstance($rpcClient, Uuid::fromString("00024500-0000-0000-C000-000000000046"));
 
 /*$body = new DcomRequest(
     Uuid::fromString('12080200-0000-0000-C000-000000000046'),

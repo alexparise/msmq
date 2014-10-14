@@ -4,8 +4,9 @@ namespace Aztech\Ntlm\Message;
 
 use Aztech\Util\Text;
 use Aztech\Net\PacketReader;
+use Aztech\Net\Buffer\BufferReader;
 
-class NtlmPacketReader extends PacketReader
+class NtlmPacketReader extends BufferReader
 {
 
     public function readSignature()

@@ -28,7 +28,7 @@ class BindPdu extends ConnectionOrientedPdu
 
     public function getAssociationGroupId()
     {
-        return $this->associationGroupId;
+        return $this->assocationGroupId;
     }
 
     public function setAssociationGroupId($id)

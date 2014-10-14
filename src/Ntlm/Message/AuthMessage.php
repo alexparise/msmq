@@ -8,6 +8,7 @@ use Aztech\Util\Hash;
 use Aztech\Util\Text;
 use Aztech\Net\PacketWriter;
 use Aztech\Net\ByteOrder;
+use Aztech\Net\Buffer\BufferWriter;
 
 class AuthMessage implements Message
 {
@@ -25,6 +26,8 @@ class AuthMessage implements Message
     private $lmHash;
 
     private $ntHash;
+    
+    private $sessionKey = '';
 
     public function __construct($flags, $nonce, $userDomain, $user, $machine, $lmHash, $ntHash)
     {
@@ -42,6 +45,11 @@ class AuthMessage implements Message
         return NTLMSSP::MSG_AUTH;
     }
 
+    public function getFlags()
+    {
+        return $this->flags;
+    }
+    
     public function getContent($offset)
     {
         $content = '';
@@ -62,7 +70,7 @@ class AuthMessage implements Message
         $header = $builder->getHeaders($offset += 4);
         $content = $builder->getContent($offset);
 
-        $writer = new PacketWriter();
+        $writer = new BufferWriter();
 
         $writer->write($header);
         $writer->writeUInt32($this->flags, ByteOrder::LITTLE_ENDIAN);
@@ -100,6 +108,11 @@ class AuthMessage implements Message
 
     private function getSessionKey()
     {
-        return "";
+        return $this->sessionKey;
+    }
+    
+    public function setSessionKey($key)
+    {
+        $this->sessionKey = $key;
     }
 }

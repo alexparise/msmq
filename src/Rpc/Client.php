@@ -10,6 +10,9 @@ use Aztech\Rpc\Socket\Socket;
 use Aztech\Rpc\Auth\AuthenticationContext;
 use Aztech\Rpc\Auth\AuthenticationLevel;
 use Aztech\Rpc\Pdu\ConnectionOriented\BindAckPdu;
+use Aztech\Rpc\Pdu\ConnectionOriented\BindNackPdu;
+use Aztech\Rpc\ResponseHandler\ConnectionOrientedResponseHandler;
+use Aztech\Rpc\ResponseHandler\ConnectionOrientedHandler;
 
 class Client
 {
@@ -35,6 +38,20 @@ class Client
         return pack('V', rand(0, bcpow(2, 16)) + rand(0, bcpow(2, 32)));
     }
 
+    public function getAuthenticationContext()
+    {
+        return $this->authContext;
+    }
+    
+    /**
+     * 
+     * @return AuthenticationStrategy
+     */
+    public function getAuthenticationStrategy()
+    {
+        return $this->authStrategy;
+    }
+    
     public function setAuthenticationStrategy(AuthenticationStrategy $strategy)
     {
         $contextId = $this->generateContextId();
@@ -50,17 +67,25 @@ class Client
 
     public function bind(BindContext $context)
     {
+        $handler = new ConnectionOrientedHandler($this, $this->authStrategy);
+        
         $verifier = $this->authStrategy->getVerifier(PduType::BIND, $this->authContext);
-        $pdu = new BindPdu($context, $verifier);
+        $request = new BindPdu($context, $verifier);
 
-        $this->socket->getWriter()->writePdu($pdu);
+        $response = $this->requestResponse($request);
 
-        $responsePdu = $this->socket->getReader()->readNextPdu();
-
-        if ($responsePdu instanceof BindAckPdu) {
-            echo 'Bound !' . PHP_EOL;
-
-            var_dump($responsePdu);
-        }
+        return $handler->handleResponse($request, $response);
+    }
+    
+    public function requestResponse(ProtocolDataUnit $request)
+    {
+        $this->request($request);
+        
+        return $this->socket->getReader()->readNextPdu();
+    }
+    
+    public function request(ProtocolDataUnit $request)
+    {
+        $this->socket->getWriter()->writePdu($request);
     }
 }

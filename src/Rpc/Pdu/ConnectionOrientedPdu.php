@@ -22,6 +22,8 @@ abstract class ConnectionOrientedPdu implements ProtocolDataUnit
 
     private $verifier;
 
+    private $rawAuthData = '';
+    
     public function __construct($packetType, AuthenticationVerifier $verifier = null, DataRepresentationFormat $format = null)
     {
         $this->format = $format ?: new DataRepresentationFormat();
@@ -62,5 +64,15 @@ abstract class ConnectionOrientedPdu implements ProtocolDataUnit
     public function getVerifier()
     {
         return $this->verifier;
+    }
+    
+    public function getRawAuthData()
+    {
+        return $this->rawAuthData;
+    }
+    
+    public function setRawAuthData($bytes)
+    {
+        $this->rawAuthData = $bytes;
     }
 }

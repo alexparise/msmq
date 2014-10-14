@@ -2,41 +2,49 @@
 
 namespace Aztech\Rpc\Auth;
 
-use Aztech\Ntlm\Client;
 use Aztech\Rpc\AuthenticationVerifier;
 use Aztech\Rpc\ProtocolDataUnit;
 use Aztech\Rpc\PduFieldCollection;
 use Aztech\Net\DataTypes;
 use Aztech\Ntlm\Message\ChallengeMessage;
+use Aztech\Ntlm\Client;
 
-class NtlmNegotiateVerifier implements AuthenticationVerifier
+class NtlmChallengeResponseVerifier implements AuthenticationVerifier
 {
     
-    private $client;
+    private $challengeResponse;
     
-    private $challenge;
+    private $context;
     
-    public function __construct(Client $client, ChallengeMessage $challenge)
+    public function __construct(AuthenticationContext $context, $challengeResponse)
     {
-        $this->client = $client;
-        $this->challenge = $challenge;
+        $this->challengeResponse = $challengeResponse;
+        $this->context = $context;
     }
     
-    public function hasVersion()
+    public function getSize($padding)
     {
-        return false;
+        return $this->getContent()->getSize() + $this->getHeaders($padding)->getSize();
     }
     
-    public function getVersion()
+    public function getHeaders($padding)
     {
-        throw new \BadMethodCallException();
+        $headers = new PduFieldCollection();
+    
+        $headers->addField(DataTypes::UINT8, $this->context->getAuthType());
+        $headers->addField(DataTypes::UINT8, $this->context->getAuthLevel());
+        $headers->addField(DataTypes::UINT8, $padding);
+        $headers->addField(DataTypes::UINT8, 0);
+        $headers->addField(DataTypes::UINT32, $this->context->getContextId());
+    
+        return $headers;
     }
     
     public function getContent()
     {
         $collection = new PduFieldCollection();
         
-        $collection->addField(DataTypes::BYTES, $this->client->getAuthPacket($this->challenge));
+        $collection->addField(DataTypes::BYTES, $this->challengeResponse);
         
         return $collection;
     }    

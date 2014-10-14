@@ -9,6 +9,7 @@ use Aztech\Rpc\ProtocolDataUnit;
 use Aztech\Rpc\PduType;
 use Aztech\Rpc\PduFieldCollection;
 use Aztech\Rpc\ProtocolDataUnitVisitor;
+use Aztech\Ntlm\Message\ChallengeMessage;
 
 class BindAckPdu extends ConnectionOrientedPdu
 {
@@ -18,6 +19,8 @@ class BindAckPdu extends ConnectionOrientedPdu
     private $secondaryAddress = 0;
 
     private $results = [];
+    
+    private $challenge;
 
     public function __construct(DataRepresentationFormat $format = null)
     {
@@ -39,6 +42,16 @@ class BindAckPdu extends ConnectionOrientedPdu
         $this->associationGroupId = $id;
     }
 
+    public function getChallenge()
+    {
+        return $this->challenge;
+    }
+    
+    public function setChallenge($challenge)
+    {
+        $this->challenge = $challenge;
+    }
+    
     public function getSecondaryAddress()
     {
         return $this->secondaryAddress;

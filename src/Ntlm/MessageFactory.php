@@ -18,6 +18,7 @@ class MessageFactory
                | NTLMSSP::NEGOTIATE_NTLM
                | NTLMSSP::NEGOTIATE_UNICODE
                | NTLMSSP::NEGOTIATE_OEM
+               | NTLMSSP::NEGOTIATE_KEY_EXCH
                | NTLMSSP::REQUEST_TARGET;
 
         return new NegotiateMessage($domain, $machine, $flags);
@@ -28,6 +29,8 @@ class MessageFactory
         $flags = NTLMSSP::NEGOTIATE_ALWAYS_SIGN
                | NTLMSSP::NEGOTIATE_NTLM
                | NTLMSSP::NEGOTIATE_UNICODE
+               | NTLMSSP::NEGOTIATE_KEY_EXCH
+               | NTLMSSP::REQUEST_ACCEPT_RESPONSE
                | NTLMSSP::REQUEST_TARGET;
 
         $nonce = $challenge->getNonce();
