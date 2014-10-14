@@ -69,21 +69,21 @@ class SocketWriter implements ProtocolDataUnitVisitor
     public function visitBindResponse(BindResponsePdu $pdu)
     {
         $fields = new PduFieldCollection();
-        
+
         $this->appendCommonHeaders($fields, $pdu);
-        
+
         $fields->addField(DataTypes::UINT16, self::FRAG_SZ);
         $fields->addField(DataTypes::UINT16, self::FRAG_SZ);
-        
+
         $this->finalizeWrite($fields, $pdu);
     }
-    
+
     public function visitRequest(RequestPdu $pdu)
     {
         $fields = new PduFieldCollection();
-        
+
         $this->appendCommonHeaders($fields, $pdu);
-        
+
         $fields->addField(DataTypes::UINT32, 0);
         $fields->addField(DataTypes::UINT16, $pdu->getContextId());
         $fields->addField(DataTypes::UINT16, $pdu->getOpNum());
@@ -91,7 +91,7 @@ class SocketWriter implements ProtocolDataUnitVisitor
             $fields->addField(DataTypes::BYTES, $pdu->getObject()->getBytes());
         }
         $fields->addField(DataTypes::BYTES, $pdu->getBody());
-        
+
         $this->finalizeWrite($fields, $pdu);
     }
 
@@ -129,8 +129,8 @@ class SocketWriter implements ProtocolDataUnitVisitor
             $headers->addField(DataTypes::UINT32, $item->getVersion());
 
             foreach ($item->getTransferSyntaxes() as $transferSyntax) {
-                $headers->addField(DataTypes::BYTES, $transferSyntax[0]->getBytes());
-                $headers->addField(DataTypes::UINT32, $transferSyntax[1]);
+                $headers->addField(DataTypes::BYTES, $transferSyntax->getUuid()->getBytes());
+                $headers->addField(DataTypes::UINT32, $transferSyntax->getVersion());
             }
         }
     }

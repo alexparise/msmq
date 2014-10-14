@@ -24,6 +24,7 @@ class BindPdu extends ConnectionOrientedPdu
 
         $this->context = $context;
         $this->verifier = $verifier;
+        $this->assocationGroupId = $context->getAssociationGroup();
     }
 
     public function getAssociationGroupId()

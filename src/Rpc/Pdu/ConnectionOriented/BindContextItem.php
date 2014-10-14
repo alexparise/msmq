@@ -3,6 +3,7 @@
 namespace Aztech\Rpc\Pdu\ConnectionOriented;
 
 use Rhumsaa\Uuid\Uuid;
+use Aztech\Rpc\Syntax;
 
 class BindContextItem
 {
@@ -23,9 +24,9 @@ class BindContextItem
         $this->transferSyntaxes = [];
     }
 
-    public function addSyntax(Uuid $interface, $version)
+    public function addSyntax(Syntax $transferSyntax)
     {
-        $this->transferSyntaxes[] = [ $interface, $version ];
+        $this->transferSyntaxes[] = $transferSyntax;
     }
 
     public function getContextId()

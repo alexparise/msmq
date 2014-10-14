@@ -7,11 +7,45 @@ use Rhumsaa\Uuid\Uuid;
 class BindContext
 {
 
+    private $associationGroup = 0x00;
+
+    private $callId;
+
     private $items;
 
-    public function __construct()
+    private $noAuth = false;
+
+    public function __construct($callId, $noAuth = false, $associationGroupId = 0x00)
     {
         $this->items = [];
+        $this->callId = $callId;
+        $this->noAuth = $noAuth;
+        $this->associationGroup = $associationGroupId;
+    }
+
+    public function getCallId()
+    {
+        return $this->callId;
+    }
+
+    public function getAssociationGroup()
+    {
+        return $this->associationGroup;
+    }
+
+    public function setAssociationGroup($group)
+    {
+        $this->associationGroup = $group;
+    }
+
+    public function isAuthDisabled()
+    {
+        return $this->noAuth;
+    }
+
+    public function disableAuth()
+    {
+        $this->noAuth = true;
     }
 
     /**
@@ -33,7 +67,7 @@ class BindContext
         $item = new BindContextItem($this->getItemCount(), $syntax, $version);
 
         foreach ($transferSyntax as $syntax) {
-            $item->addSyntax($syntax[0], $syntax[1]);
+            $item->addSyntax($syntax);
         }
 
         $this->items[] = $item;

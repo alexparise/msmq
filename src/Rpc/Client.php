@@ -13,6 +13,7 @@ use Aztech\Rpc\Pdu\ConnectionOriented\BindAckPdu;
 use Aztech\Rpc\Pdu\ConnectionOriented\BindNackPdu;
 use Aztech\Rpc\ResponseHandler\ConnectionOrientedResponseHandler;
 use Aztech\Rpc\ResponseHandler\ConnectionOrientedHandler;
+use Aztech\Rpc\Auth\NullVerifier;
 
 class Client
 {
@@ -29,6 +30,7 @@ class Client
     {
         $this->dataFormat = new DataRepresentationFormat();
         $this->socket = new Socket(new DebugSocket(new BaseSocket($host, $port)));
+        $this->host = $host;
     }
 
     private function generateContextId()
@@ -42,16 +44,16 @@ class Client
     {
         return $this->authContext;
     }
-    
+
     /**
-     * 
+     *
      * @return AuthenticationStrategy
      */
     public function getAuthenticationStrategy()
     {
         return $this->authStrategy;
     }
-    
+
     public function setAuthenticationStrategy(AuthenticationStrategy $strategy)
     {
         $contextId = $this->generateContextId();
@@ -68,22 +70,26 @@ class Client
     public function bind(BindContext $context)
     {
         $handler = new ConnectionOrientedHandler($this, $this->authStrategy);
-        
-        $verifier = $this->authStrategy->getVerifier(PduType::BIND, $this->authContext);
+
+        $verifier = $context->isAuthDisabled() ?
+            new NullVerifier() :
+            $this->authStrategy->getVerifier(PduType::BIND, $this->authContext);
+
         $request = new BindPdu($context, $verifier);
+        $request->setCallId($context->getCallId());
 
         $response = $this->requestResponse($request);
 
         return $handler->handleResponse($request, $response);
     }
-    
+
     public function requestResponse(ProtocolDataUnit $request)
     {
         $this->request($request);
-        
+
         return $this->socket->getReader()->readNextPdu();
     }
-    
+
     public function request(ProtocolDataUnit $request)
     {
         $this->socket->getWriter()->writePdu($request);

@@ -66,6 +66,11 @@ class BufferReader extends AbstractReader
         return $this->data;
     }
 
+    public function getBufferSize()
+    {
+        return strlen($this->data);
+    }
+
     public function reset()
     {
         $this->offset = 0;
@@ -74,5 +79,20 @@ class BufferReader extends AbstractReader
     public function seek($offset)
     {
         $this->offset = $offset;
+    }
+
+    public function readTo($hex, $exclude = false)
+    {
+        $buffer = '';
+
+        while (substr(bin2hex($buffer), - strlen($hex)) !== $hex && $this->offset < $this->getBufferSize()) {
+            $buffer .= $this->read(2);
+        }
+
+        if ($exclude) {
+            $buffer = substr($buffer, 0, -2);
+        }
+
+        return $buffer;
     }
 }

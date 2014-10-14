@@ -5,22 +5,33 @@ namespace Aztech\Dcom\Common;
 use Aztech\Dcom\DcomInterface;
 use Aztech\Rpc\Client;
 use Rhumsaa\Uuid\Uuid;
-use Aztech\Dcom\TransferSyntax;
+use Aztech\Rpc\TransferSyntax;
 
 abstract class CommonInterface extends DcomInterface
 {
     protected $client;
 
     abstract protected function getIid();
-    
+
+    protected function getSyntaxes()
+    {
+        $transferSyntaxes = [];
+
+        $transferSyntaxes[] = TransferSyntax::getNdr();
+        $transferSyntaxes[] = TransferSyntax::getNegotiate();
+
+        return $transferSyntaxes;
+    }
+
     public function __construct(Client $client)
     {
         $this->client = $client;
-        
+
         $iid = $this->getIid();
-        $transferSyntax = Uuid::fromBytes(hex2bin(TransferSyntax::NDR));
-        $transferSyntaxVersion = TransferSyntax::NDR_VERSION;
-        
-        parent::__construct($iid, 0x00, $transferSyntax, $transferSyntaxVersion);
+
+        $transferSyntaxes = $this->getSyntaxes();
+
+        parent::__construct($iid, 0x00, $transferSyntaxes);
     }
+
 }

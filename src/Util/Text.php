@@ -11,7 +11,7 @@ class Text
 
     public static function fromUnicode($unicodeText)
     {
-        return iconv('UTF-16LE', 'UTF-8', $text);
+        return iconv('UTF-16LE', 'UTF-8', $unicodeText);
     }
 
     public static function dumpHex($bytes)

@@ -8,6 +8,7 @@ use Aztech\Rpc\ProtocolDataUnit;
 use Aztech\Rpc\PduType;
 use Aztech\Rpc\Parser\ConnectionOriented\BindAckPduParser;
 use Aztech\Rpc\Parser\ConnectionOriented\BindNackPduParser;
+use Aztech\Rpc\Parser\ConnectionOriented\ResponsePduParser;
 
 class ConnectionOrientedPduParser implements PduParser
 {

@@ -10,6 +10,7 @@ use Aztech\Rpc\PduType;
 use Aztech\Dcom\DcomInterface;
 use Aztech\Dcom\Common\ISystemActivator;
 use Aztech\Dcom\Common\IOxIdResolver;
+use Aztech\Dcom\ServiceLocator;
 
 require_once 'vendor/autoload.php';
 
@@ -25,9 +26,7 @@ $ntlmStrategy = new NtlmAuthenticationStrategy($ntlmClient);
 $rpcClient = new RpcClient('192.168.50.136', 135);
 $rpcClient->setAuthenticationStrategy($ntlmStrategy);
 
-$resolver = new IOxIdResolver($rpcClient);
-
-$resolver->ServerAlive();
-$interface = $resolver->ResolveOxId(Uuid::fromBytes(hex2bin(ISystemActivator::IID)), []);
+$locator = new ServiceLocator($rpcClient);
+$interface = $locator->getISystemActivator();
 
 $remoteObject = $interface->createObject(Uuid::fromString("00024500-0000-0000-C000-000000000046"));

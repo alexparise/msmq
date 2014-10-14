@@ -15,18 +15,18 @@ use Aztech\Rpc\PduType;
 class ConnectionOrientedHandler implements ResponseHandler
 {
     private $client;
-    
+
     private $authStrategy;
-    
+
     public function __construct(Client $client, AuthenticationStrategy $authStrategy)
     {
         $this->client = $client;
         $this->authStrategy = $authStrategy;
     }
-    
+
     public function handleResponse(ProtocolDataUnit $request, ProtocolDataUnit $response)
     {
-        if ($request instanceof BindPdu) {  
+        if ($request instanceof BindPdu) {
             if ($response instanceof BindNackPdu) {
                 throw new \RuntimeException('Bind rejected (Reason : 0x' . dechex($response->getReason()) . ')', $response->getReason());
             }
@@ -34,20 +34,22 @@ class ConnectionOrientedHandler implements ResponseHandler
                 return $this->respondToBindAck($response);
             }
         }
-        
+
         throw new \RuntimeException('Invalid response type.');
-    }    
-    
+    }
+
     protected function respondToBindAck(BindAckPdu $ack)
     {
-        $verifier = $this->authStrategy->getVerifier(
-            PduType::BIND_RESP, 
-            $this->client->getAuthenticationContext(), 
-            $ack
-        );
-        
-        $this->client->request(new BindResponsePdu($verifier));
-        
+        if ($ack->getRawAuthData()) {
+            $verifier = $this->authStrategy->getVerifier(
+                PduType::BIND_RESP,
+                $this->client->getAuthenticationContext(),
+                $ack
+            );
+
+            $this->client->request(new BindResponsePdu($verifier));
+        }
+
         return $ack;
     }
 }
