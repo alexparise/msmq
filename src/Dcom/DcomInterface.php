@@ -8,6 +8,8 @@ use Aztech\Rpc\Client;
 use Aztech\Rpc\Pdu\ConnectionOriented\RequestPdu;
 use Aztech\Rpc\PduType;
 use Aztech\Net\Buffer\BufferWriter;
+use Aztech\Dcom\Marshalling\MarshalledBuffer;
+use Aztech\Dcom\Marshalling\UnmarshallingBuffer;
 
 class DcomInterface
 {
@@ -38,7 +40,7 @@ class DcomInterface
         return $this->version;
     }
 
-    public function createInstance(Client $client, Uuid $object)
+    protected function execute(Client $client, $op, MarshalledBuffer $in, UnmarshallingBuffer $out)
     {
         $context = new BindContext();
 
@@ -55,33 +57,11 @@ class DcomInterface
         );
 
         $buffer = new BufferWriter();
+        
         $buffer->write((new OrpcThis(Uuid::uuid4()))->getContent());
-
-        // DCOM
-        // ClsId
-        $buffer->write($object->getBytes());
-        // OBJREF Count ???
-        $buffer->writeUInt32(0);
-        // ??
-        $buffer->writeUInt32(0);
-        // Client imp level
-        $buffer->writeUInt32(0);
-        // Mode
-        $buffer->writeUInt32(0);
-        // IID count
-        $buffer->writeUInt32(1);
-        // ???
-        $buffer->write(pack('H*', '803F140001000000'));
-
-        $buffer->write($object->getBytes());
-
-        // RequestedProtSeq
-        $buffer->writeUInt32(1);
-        $buffer->writeUInt32(1);
-        // Type (tcp)
-        $buffer->writeUInt16(7);
-
-        $request = new RequestPdu($this->iid, 0x03, $verifier);
+        $buffer->write($in->getBytes());
+        
+        $request = new RequestPdu($this->iid, $op, $verifier);
         $request->setBody($buffer->getBuffer());
 
         $response = $client->request($request);

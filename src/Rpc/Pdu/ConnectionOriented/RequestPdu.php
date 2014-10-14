@@ -19,7 +19,6 @@ class RequestPdu extends ConnectionOrientedPdu
     private $object;
     
     private $body;
-
     
     public function __construct(Uuid $object, $opNum, AuthenticationVerifier $verifier, DataRepresentationFormat $format = null)
     {
