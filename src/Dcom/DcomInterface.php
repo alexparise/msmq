@@ -16,6 +16,7 @@ use Aztech\Net\Buffer\BufferReader;
 use Aztech\Rpc\Auth\NullVerifier;
 use Aztech\Rpc\Auth\AuthenticationContext;
 use Aztech\Rpc\Auth\AuthenticationLevel;
+use Aztech\Util\Text;
 
 class DcomInterface
 {
@@ -78,28 +79,7 @@ class DcomInterface
     protected function execute(Client $client, $opNum, MarshalledBuffer $in = null, UnmarshallingBuffer $out = null)
     {
         if (! $this->binding) {
-            $context = new BindContext($this->callId, $this->noAuth, $this->associationId);
-
-            foreach ($this->transferSyntaxes as $transferSyntax) {
-                $context->addItem($this->iid, $this->version, [ $transferSyntax ]);
-            }
-
-            $originalContext = $client->getAuthenticationContext();
-
-            $contextId = $originalContext->getContextId();
-            $authLevel = $this->noAuth ? AuthenticationLevel::NONE : $originalContext->getAuthLevel();
-            $authType  = $this->noAuth ? AuthenticationContext::AUTH_NONE : $originalContext->getAuthType();
-
-            $authContext = new AuthenticationContext($contextId, $authLevel, $authType);
-
-            $this->binding = $client->bind($context);
-            $this->associationId = $this->binding->getAssociationGroupId();
-
-            $this->verifier = $client->getAuthenticationStrategy()->getVerifier(
-                PduType::REQUEST,
-                $authContext,
-                $this->binding
-            );
+            $this->bind($client);
         }
 
         $buffer = new BufferWriter();
@@ -108,7 +88,7 @@ class DcomInterface
             $buffer->write($in->getBytes());
         }
 
-        $request = new RequestPdu(null, $opNum, $this->verifier);
+        $request = new RequestPdu($this->iid, $opNum, $this->verifier);
         $request->setCallId($this->callId);
         $request->setBody($buffer->getBuffer());
 
@@ -121,17 +101,36 @@ class DcomInterface
         return $response;
     }
 
+    protected function bind(Client $client)
+    {
+        $context = new BindContext($this->callId, $this->noAuth, $this->associationId);
+
+        foreach ($this->transferSyntaxes as $transferSyntax) {
+            $context->addItem($this->iid, $this->version, [ $transferSyntax ]);
+        }
+
+        $originalContext = $client->getAuthenticationContext();
+
+        $contextId = $originalContext->getContextId();
+        $authLevel = $this->noAuth ? AuthenticationLevel::NONE : $originalContext->getAuthLevel();
+        $authType  = $this->noAuth ? AuthenticationContext::AUTH_NONE : $originalContext->getAuthType();
+
+        $authContext = new AuthenticationContext($contextId, $authLevel, $authType);
+
+        $this->binding = $client->bind($context);
+        $this->associationId = $this->binding->getAssociationGroupId();
+
+        $this->verifier = $client->getAuthenticationStrategy()->getVerifier(
+            PduType::REQUEST,
+            $authContext,
+            $this->binding
+        );
+    }
+
     protected function parseResponse(ResponsePdu $response, UnmarshallingBuffer $out)
     {
-        $reader = new BufferReader(substr($response->getBody(), -4, 4));
-        $hresult = $reader->readUInt32();
+        $reader = new BufferReader($response->getBody());
 
-        if ($hresult != 0) {
-            throw new ComException(dechex($hresult));
-        }
-
-        if (strlen($response->getBody()) > 4) {
-
-        }
+        $out->parseValues($reader);
     }
 }

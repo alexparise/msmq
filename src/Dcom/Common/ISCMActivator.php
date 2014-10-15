@@ -8,14 +8,16 @@ use Aztech\Rpc\TransferSyntax;
 use Aztech\Rpc\Client;
 use Aztech\Dcom\Marshalling\MarshalledBuffer;
 use Aztech\Dcom\Marshalling\UnmarshallingBuffer;
+use Aztech\Dcom\Marshalling\Marshaller\GuidMarshaller;
+use Aztech\Util\Guid;
 
-class ISystemActivator extends CommonInterface
+class ISCMActivator extends CommonInterface
 {
-    const IID = 'A001000000000000C000000000000046';
+    const IID = '{00000136-0000-0000-c000-000000000046}';
 
     protected function getIid()
     {
-        return Uuid::fromBytes(hex2bin(self::IID));
+        return Guid::fromString(self::IID);
     }
 
     protected function getSyntaxes()
@@ -23,22 +25,25 @@ class ISystemActivator extends CommonInterface
         return [ TransferSyntax::getNdr() ];
     }
 
-    public function remoteGetClassObject(Uuid $clsId)
+    public function remoteGetClassObject(Uuid $clsId, array $iids)
     {
         $in = new MarshalledBuffer();
         $out = new UnmarshallingBuffer();
-        
-        $writer = $in->getWriter();
-        
+
+        $in->add(new OrpcThisMarshaller(), $this->getOrpcThis());
+        $in->add(new GuidMarshaller(), $clsId);
+
         $writer->write($this->getOrpcThis()->getBytes());
         $writer->write($clsId->getBytes());
         $writer->writeUInt32(0);
-        
-        return $this->execute($this->client, 0x03, $in, $out);
+
+        $this->execute($this->client, 0x03, $in, $out);
+
+        return $out;
     }
-    
+
     public function remoteCreateInstance($pUnkOuter, $pActProperties)
     {
-        
+
     }
 }

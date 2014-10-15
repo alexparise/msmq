@@ -8,6 +8,8 @@ use Aztech\Rpc\Socket\Socket;
 use Aztech\Net\Socket\DebugSocket;
 use Aztech\Dcom\Common\ISystemActivator;
 use Aztech\Dcom\Common\IRemoteActivation;
+use Aztech\Dcom\Common\IRemoteSCMActivator;
+use Aztech\Dcom\Common\ISCMActivator;
 
 class ServiceLocator
 {
@@ -21,7 +23,7 @@ class ServiceLocator
         $this->client = $client;
         $this->resolver = new IOxIdResolver($client);
     }
-    
+
     public function getResolver()
     {
         return $this->resolver;
@@ -30,40 +32,39 @@ class ServiceLocator
     public function getIRemoteActivation()
     {
         $client = $this->getClient();
-        
+
         $activator = new IRemoteActivation($client);
         $activator->setAssociationId($this->resolver->getAssociationId());
-        
+
         return $activator;
     }
-    
-    public function getISystemActivator()
+
+    public function getISCMActivator()
     {
         $client = $this->getClient();
-        
-        $activator = new ISystemActivator($client);
+
+        $activator = new ISCMActivator($client);
         $activator->setAssociationId($this->resolver->getAssociationId());
-        
+
         return $activator;
     }
-    
+
     protected function getClient()
     {
-        $bindings = $this->resolver->ServerAlive2();
+        $bindings = null;
+
+        $this->resolver->ServerAlive2($bindings);
 
         foreach ($bindings->getStringBindings() as $binding) {
             $host = $binding->getNetworkAddress();
 
-            if (filter_var($host, FILTER_VALIDATE_IP) === false || $host != $this->client->host) {
-                continue;
+            if (filter_var($host, FILTER_VALIDATE_IP) === false) {
+                $host = gethostbyname($host);
             }
 
             $port = 135; // FIXME
 
-            $client = new Client($host, $port);
-            $client->setAuthenticationStrategy($this->client->getAuthenticationStrategy());
-
-            return $client;
+            return new Client($this->client->getAuthenticationProvider(), $host, $port);
         }
 
         throw new \RuntimeException('Unable to connect to service');

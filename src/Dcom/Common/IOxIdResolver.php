@@ -12,10 +12,15 @@ use Aztech\Dcom\Marshalling\StringBinding;
 use Aztech\Dcom\Marshalling\SecurityBinding;
 use Aztech\Dcom\Marshalling\DualStringArray;
 use Aztech\Util\Text;
+use Aztech\Util\Guid;
+use Aztech\Dcom\Marshalling\Marshaller\ComVersionMarshaller;
+use Aztech\Dcom\Marshalling\Marshaller\DualStringArrayMarshaller;
+use Aztech\Dcom\Marshalling\Marshaller\PrimitiveMarshaller;
+use Aztech\Dcom\Marshalling\Marshaller\GuidMarshaller;
 
 class IOxIdResolver extends CommonInterface
 {
-    const IID = 'C4FEFC9960521B10BBCB00AA0021347A';
+    const IID = '{99fcfec4-5260-101b-bbcb-00aa0021347a}';
 
     private $ops = [
        'ResolveOxId'   => 0x00,
@@ -30,27 +35,25 @@ class IOxIdResolver extends CommonInterface
 
     protected function getIid()
     {
-        return Uuid::fromBytes(hex2bin(self::IID));
+        return Guid::fromString(self::IID);
     }
 
-    public function ResolveOxId(Uuid $oxid, array $protocolSequences = [])
+    public function ResolveOxId($oxid, array $protocolSequences = [])
     {
+        //$this->noAuth = false;
+
         $op = $this->ops[__FUNCTION__];
 
         $in = new MarshalledBuffer();
         $out = new UnmarshallingBuffer();
 
-        $buffer = $in->getWriter();
+        $in->add(PrimitiveMarshaller::UInt64(), $oxid);
+        $in->add(PrimitiveMarshaller::UInt16(), count($protocolSequences));
+        $in->add(PrimitiveMarshaller::UInt16(), $protocolSequences);
 
-        //$buffer->write($this->getOrpcThis()->getBytes());
-        // ClsId
-        $buffer->write(substr($oxid->getBytes(), 0, DataTypes::INT64_SZ));
-
-        // RequestedProtSeq
-        $buffer->writeUInt32(1);
-        $buffer->writeUInt32(1);
-        // Type (tcp)
-        $buffer->writeUInt16(7);
+        $out->add(new DualStringArrayMarshaller());
+        $out->add(new GuidMarshaller());
+        $out->add(PrimitiveMarshaller::UInt32());
 
         return $this->execute($this->client, 0, $in, $out);
     }
@@ -60,40 +63,14 @@ class IOxIdResolver extends CommonInterface
         return $this->execute($this->client, $this->ops[__FUNCTION__]);
     }
 
-    public function ServerAlive2()
+    public function ServerAlive2(& $bindings)
     {
-        $response = $this->execute($this->client, $this->ops[__FUNCTION__]);
-        $reader = new BufferReader($response->getBody());
+        $out = new UnmarshallingBuffer();
 
-        $major = $reader->readUInt16();
-        $minor = $reader->readUInt16();
-        $unknown = $reader->read(8);
+        $out->add(new ComVersionMarshaller());
+        $out->add(new DualStringArrayMarshaller(), 8);
 
-        $numEntries = $reader->readUInt16();
-        $securityOffset = $reader->readUInt16();
-
-        $offset = $reader->getReadByteCount();
-
-        $stringBindings = [];
-        $securityBindings = [];
-
-        while (ceil(($reader->getReadByteCount() - $offset + 1) / DataTypes::INT16_SZ) < $securityOffset) {
-            $towerId = $reader->readUInt16();
-            $networkAddress = Text::fromUnicode($reader->readTo("0000", true));
-
-            $stringBindings[] = new StringBinding($networkAddress, $towerId);
-        }
-
-        $reader->read(2);
-
-        while (ceil(($reader->getReadByteCount() - $offset + 1) / DataTypes::INT16_SZ) < $numEntries) {
-            $authnSvc = $reader->readUInt16();
-            $authzSvc = $reader->readUInt16();
-            $principalName = $reader->readTo("0000");
-
-            $securityBindings[] = new SecurityBinding($authnSvc, $authzSvc, $principalName);
-        }
-
-        return new DualStringArray($stringBindings, $securityBindings);
+        $response = $this->execute($this->client, $this->ops[__FUNCTION__], null, $out);
+        $bindings = $out->getValues()[1];
     }
 }

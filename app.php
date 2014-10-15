@@ -12,27 +12,33 @@ use Aztech\Dcom\Common\ISystemActivator;
 use Aztech\Dcom\Common\IOxIdResolver;
 use Aztech\Dcom\ServiceLocator;
 use Aztech\Net\DataTypes;
+use Aztech\Util\Guid;
+use Aztech\Dcom\Interfaces\IUnknown;
+use Aztech\Dcom\Common\EndPointMapper;
+use Aztech\Dcom\Common\IRemoteActivation;
 
 require_once 'vendor/autoload.php';
 
 $user = 'thibaud';
 $password = 'password';
-$userDomain = 'WORKGROUP';
 $domain = 'WORKGROUP';
 $machine = 'VIRTWIN';
 
-$ntlmClient = new NtlmClient($user, $password, $userDomain, $domain, $machine);
-$ntlmStrategy = new NtlmAuthenticationStrategy($ntlmClient);
+$auth = new NtlmClient($user, $password, $domain, $domain, $machine);
+$client = new RpcClient($auth, $machine, 135);
+$locator = new ServiceLocator($client);
+//$activator = $locator->getISCMActivator();
 
-$rpcClient = new RpcClient('192.168.50.135', 135);
-$rpcClient->setAuthenticationStrategy($ntlmStrategy);
+$epMapper = new EndPointMapper($client);
 
-$locator = new ServiceLocator($rpcClient);
+$epMapper->ept_lookup(
+    0x00,
+    Guid::null(),
+    Guid::null()
+);
 
-//$locator->getResolver()->ResolveOxId(Uuid::fromString("00450200-0000-0000-C000-000000000046"));
+//$exporter = $locator->getResolver()->ResolveOxId("0x00112233aabbccdd", [ 0x07 ]);
+$interface = $locator->createInstance(IUnknown::class);
 
-$interface = $locator->getISystemActivator();
+//$interface->Visible = true;
 
-$remoteObject = $interface->remoteGetClassObject(Uuid::fromString("00450200-0000-0000-C000-000000000046"), [
-	Uuid::fromString("00000000-0000-0000-C000-000000000046")
-]);

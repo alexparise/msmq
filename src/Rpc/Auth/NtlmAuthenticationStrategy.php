@@ -35,7 +35,7 @@ class NtlmAuthenticationStrategy implements AuthenticationStrategy
                 return new NtlmChallengeResponseVerifier($context, $challengeResponse);
             }
 
-            if ($lastResponse && ! $this->verifier) {
+            if ($lastResponse && ! ($this->verifier instanceof NtlmVerifier)) {
                 $this->verifier = new NtlmVerifier($context, $this->client->getSession());
             }
         }

@@ -37,13 +37,13 @@ final class DataTypes
 
     const INT64 = 'int64';
 
-    const UINT8 = 'int8';
+    const UINT8 = 'uint8';
 
-    const UINT16 = 'int16';
+    const UINT16 = 'uint16';
 
-    const UINT32 = 'int32';
+    const UINT32 = 'uint32';
 
-    const UINT64 = 'int64';
+    const UINT64 = 'uint64';
 
     const BYTES = 'bytes';
 }

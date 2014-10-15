@@ -6,30 +6,31 @@ use Aztech\Dcom\DcomInterface;
 use Rhumsaa\Uuid\Uuid;
 use Aztech\Dcom\Marshalling\MarshalledBuffer;
 use Aztech\Dcom\Marshalling\UnmarshallingBuffer;
+use Aztech\Util\Guid;
 
 class IRemoteActivation extends CommonInterface
 {
 
-    const IID = 'B84A9F4D1C7DCF11861E0020AF6E7C57';
-    
+    const IID = '{4d9f4ab8-7d1c-11cf-861e-0020af6e7c57}';
+
     const IUNK = '00000000-0000-0000-C000-000000000046';
-    
+
     protected function getIid()
     {
-        return Uuid::fromBytes(hex2bin(self::IID));
+        return Guid::fromString(self::IID);
     }
-    
+
     public function remoteActivation(Uuid $clsid, array $iids)
     {
         $in = new MarshalledBuffer();
         $out = new UnmarshallingBuffer();
-        
+
         $writer = $in->getWriter();
-        
+
         $writer->write($this->getOrpcThis()->getBytes());
-        
+
         $buffer = $in->getWriter();
-        
+
         // DCOM
         // ClsId
         $buffer->write($clsid->getBytes());
@@ -45,17 +46,17 @@ class IRemoteActivation extends CommonInterface
         $buffer->writeUInt32(count($iids));
         // ???
         $buffer->write(pack('H*', '803F140001000000'));
-        
+
         foreach ($iids as $iid) {
             $buffer->write($iid->getBytes());
         }
-        
+
         // RequestedProtSeq
         $buffer->writeUInt32(1);
         $buffer->writeUInt32(1);
         // Type (tcp)
         $buffer->writeUInt16(7);
-        
+
         $response = $this->execute($this->client, 0x00, $in, $out);
     }
 }

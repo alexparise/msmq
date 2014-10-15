@@ -2,6 +2,8 @@
 
 namespace Aztech\Net;
 
+use Aztech\Util\Text;
+
 abstract class AbstractWriter implements Writer
 {
 
@@ -19,6 +21,11 @@ abstract class AbstractWriter implements Writer
         }
 
         return $value;
+    }
+
+    public function setByteOrder($order)
+    {
+        $this->byteOrder = $order;
     }
 
     public function writeChr($char)
@@ -69,16 +76,39 @@ abstract class AbstractWriter implements Writer
 
     public function writeUInt64($value)
     {
-        throw new \BadMethodCallException('Not implemented.');
+        if (is_string($value)) {
+            if (substr($value, 0, 2) == '0x') {
+                $value = substr($value, 2);
+            }
+        }
+        else {
+            $value = dechex($value);
+        }
+
+        $value = str_pad($value, "0", DataTypes::INT64_SZ * 2, STR_PAD_LEFT);
+
+        $upper = substr($value, 0, 8);
+        $lower = substr($value, 8);
+
+        if ($this->byteOrder == ByteOrder::BIG_ENDIAN && $upper != $lower) {
+            $upper = $upper ^ $lower;
+            $lower = $upper ^ $lower;
+            $upper = $upper ^ $lower;
+        }
+
+        $this->writeUInt32(hexdec($lower));
+        $this->writeUInt32(hexdec($upper));
     }
 
     public function writeHex($value, $size = 0)
     {
-        $format = ($byteOrder == ByteOrder::LITTLE_ENDIAN) ? 'H' : 'h';
+        $format = ($this->byteOrder == ByteOrder::LITTLE_ENDIAN) ? 'H' : 'h';
 
-        if ($size != 0) {
-            $format .= $size;
+        if ($size == 0) {
+            $size = strlen($value);
         }
+
+        $format .= $size;
 
         return $this->write(pack($format , $value));
     }

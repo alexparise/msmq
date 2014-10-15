@@ -14,8 +14,12 @@ class Text
         return iconv('UTF-16LE', 'UTF-8', $unicodeText);
     }
 
-    public static function dumpHex($bytes)
+    public static function dumpHex($bytes, $caption = '')
     {
+        if ($caption) {
+            echo PHP_EOL . 'HEXDUMP -- ' . $caption . PHP_EOL;
+        }
+
         $unpacked = unpack('H*', $bytes);
         $hexDump = reset($unpacked);
 

@@ -84,7 +84,7 @@ class SocketWriter implements ProtocolDataUnitVisitor
 
         $this->appendCommonHeaders($fields, $pdu);
 
-        $fields->addField(DataTypes::UINT32, 0);
+        $fields->addField(DataTypes::UINT32, strlen($pdu->getBody()));
         $fields->addField(DataTypes::UINT16, $pdu->getContextId());
         $fields->addField(DataTypes::UINT16, $pdu->getOpNum());
         if ($pdu->getObject()) {

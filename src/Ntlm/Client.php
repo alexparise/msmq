@@ -9,8 +9,10 @@ use Aztech\Util\Text;
 use Aztech\Net\PacketWriter;
 use Aztech\Net\Buffer\BufferWriter;
 use Aztech\Ntlm\Random\OpenSslGenerator;
+use Aztech\Rpc\AuthenticationStrategyProvider;
+use Aztech\Rpc\Auth\NtlmAuthenticationStrategy;
 
-class Client
+class Client implements AuthenticationStrategyProvider
 {
 
     private $generator;
@@ -30,6 +32,11 @@ class Client
         $this->messageParser = new MessageParser();
         $this->password = $password;
         $this->session = new Session($machine, $user, $userDomain);
+    }
+
+    public function getStrategy()
+    {
+        return new NtlmAuthenticationStrategy($this);
     }
 
     public function getAuthPacket(ChallengeMessage $challenge)

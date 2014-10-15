@@ -18,6 +18,8 @@ use Aztech\Rpc\Auth\NullVerifier;
 class Client
 {
 
+    private $authProvider = null;
+
     private $authContext = null;
 
     private $authStrategy = null;
@@ -26,11 +28,18 @@ class Client
 
     private $socket = null;
 
-    public function __construct($host, $port)
+    public function __construct(AuthenticationStrategyProvider $authProvider, $host, $port)
     {
+        if (filter_var($host, FILTER_VALIDATE_IP) === false) {
+            $host = gethostbyname($host);
+        }
+
         $this->dataFormat = new DataRepresentationFormat();
         $this->socket = new Socket(new DebugSocket(new BaseSocket($host, $port)));
         $this->host = $host;
+        $this->authProvider = $authProvider;
+
+        $this->setAuthenticationStrategy($authProvider->getStrategy());
     }
 
     private function generateContextId()
@@ -45,6 +54,11 @@ class Client
         return $this->authContext;
     }
 
+    public function getAuthenticationProvider()
+    {
+        return $this->authProvider;
+    }
+
     /**
      *
      * @return AuthenticationStrategy
@@ -54,7 +68,7 @@ class Client
         return $this->authStrategy;
     }
 
-    public function setAuthenticationStrategy(AuthenticationStrategy $strategy)
+    private function setAuthenticationStrategy(AuthenticationStrategy $strategy)
     {
         $contextId = $this->generateContextId();
 
