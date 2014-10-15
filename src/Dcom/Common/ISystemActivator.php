@@ -6,6 +6,8 @@ use Aztech\Dcom\DcomInterface;
 use Rhumsaa\Uuid\Uuid;
 use Aztech\Rpc\TransferSyntax;
 use Aztech\Rpc\Client;
+use Aztech\Dcom\Marshalling\MarshalledBuffer;
+use Aztech\Dcom\Marshalling\UnmarshallingBuffer;
 
 class ISystemActivator extends CommonInterface
 {
@@ -21,9 +23,22 @@ class ISystemActivator extends CommonInterface
         return [ TransferSyntax::getNdr() ];
     }
 
-    public function createObject(Uuid $clsId)
+    public function remoteGetClassObject(Uuid $clsId)
     {
-        echo 'Creating object';
-        return $this->execute($this->client, 0x03);
+        $in = new MarshalledBuffer();
+        $out = new UnmarshallingBuffer();
+        
+        $writer = $in->getWriter();
+        
+        $writer->write($this->getOrpcThis()->getBytes());
+        $writer->write($clsId->getBytes());
+        $writer->writeUInt32(0);
+        
+        return $this->execute($this->client, 0x03, $in, $out);
+    }
+    
+    public function remoteCreateInstance($pUnkOuter, $pActProperties)
+    {
+        
     }
 }

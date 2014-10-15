@@ -6,13 +6,21 @@ use Aztech\Dcom\DcomInterface;
 use Aztech\Rpc\Client;
 use Rhumsaa\Uuid\Uuid;
 use Aztech\Rpc\TransferSyntax;
+use Aztech\Dcom\OrpcThis;
 
 abstract class CommonInterface extends DcomInterface
 {
     protected $client;
 
+    protected $orpcThis;
+    
     abstract protected function getIid();
 
+    protected function getOrpcThis()
+    {
+        return $this->orpcThis;
+    }
+    
     protected function getSyntaxes()
     {
         $transferSyntaxes = [];
@@ -26,7 +34,8 @@ abstract class CommonInterface extends DcomInterface
     public function __construct(Client $client)
     {
         $this->client = $client;
-
+        $this->orpcThis = new OrpcThis(Uuid::uuid4());
+        
         $iid = $this->getIid();
 
         $transferSyntaxes = $this->getSyntaxes();

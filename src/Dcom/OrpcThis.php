@@ -23,7 +23,7 @@ class OrpcThis
         $this->cid = $cid;        
     }
     
-    public function getContent()
+    public function getBytes()
     {
         $writer = new BufferWriter();
         

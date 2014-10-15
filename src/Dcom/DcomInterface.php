@@ -49,15 +49,11 @@ class DcomInterface
 
     public function getAssociationId()
     {
-        var_dump('in class', get_class($this));
-        var_dump($this->associationId);
         return $this->associationId;
     }
 
     public function setAssociationId($id)
     {
-        var_dump('in class', get_class($this));
-        var_dump($id);
         $this->associationId = $id;
     }
 
@@ -104,13 +100,10 @@ class DcomInterface
                 $authContext,
                 $this->binding
             );
-
-            $this->orpcThis = new OrpcThis(Uuid::uuid4());
         }
 
         $buffer = new BufferWriter();
 
-        //$buffer->write($this->orpcThis->getContent());
         if ($in) {
             $buffer->write($in->getBytes());
         }

@@ -11,6 +11,7 @@ use Aztech\Dcom\DcomInterface;
 use Aztech\Dcom\Common\ISystemActivator;
 use Aztech\Dcom\Common\IOxIdResolver;
 use Aztech\Dcom\ServiceLocator;
+use Aztech\Net\DataTypes;
 
 require_once 'vendor/autoload.php';
 
@@ -23,10 +24,15 @@ $machine = 'VIRTWIN';
 $ntlmClient = new NtlmClient($user, $password, $userDomain, $domain, $machine);
 $ntlmStrategy = new NtlmAuthenticationStrategy($ntlmClient);
 
-$rpcClient = new RpcClient('192.168.50.136', 135);
+$rpcClient = new RpcClient('192.168.50.135', 135);
 $rpcClient->setAuthenticationStrategy($ntlmStrategy);
 
 $locator = new ServiceLocator($rpcClient);
+
+//$locator->getResolver()->ResolveOxId(Uuid::fromString("00450200-0000-0000-C000-000000000046"));
+
 $interface = $locator->getISystemActivator();
 
-$remoteObject = $interface->createObject(Uuid::fromString("00024500-0000-0000-C000-000000000046"));
+$remoteObject = $interface->remoteGetClassObject(Uuid::fromString("00450200-0000-0000-C000-000000000046"), [
+	Uuid::fromString("00000000-0000-0000-C000-000000000046")
+]);
