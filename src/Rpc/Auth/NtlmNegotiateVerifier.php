@@ -11,14 +11,14 @@ use Aztech\Net\DataTypes;
 class NtlmNegotiateVerifier implements AuthenticationVerifier
 {
 
-    private $client;
-
     private $context;
 
-    public function __construct(Client $client, AuthenticationContext $context)
+    private $negotiate;
+
+    public function __construct(AuthenticationContext $context, $negotiatePacket)
     {
-        $this->client = $client;
         $this->context = $context;
+        $this->negotiate = $negotiatePacket;
     }
 
     public function getSize($padding)
@@ -43,7 +43,7 @@ class NtlmNegotiateVerifier implements AuthenticationVerifier
     {
         $collection = new PduFieldCollection();
 
-        $collection->addField(DataTypes::BYTES, $this->client->getNegotiatePacket());
+        $collection->addField(DataTypes::BYTES, $this->negotiate);
 
         return $collection;
     }

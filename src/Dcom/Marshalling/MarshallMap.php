@@ -4,6 +4,7 @@ namespace Aztech\Dcom\Marshalling;
 
 use Aztech\Net\Reader;
 use Aztech\Net\Writer;
+use Aztech\Util\Text;
 
 class MarshallMap
 {
@@ -51,7 +52,9 @@ class MarshallMap
                 $reader->read($this->offsets[$i]);
             }
 
-            $values[] = $this->marshallers[$i]->unmarshallNext($reader);
+            $value = $this->marshallers[$i]->unmarshallNext($reader);
+
+            $values[] = $value;
         }
 
         return $values;

@@ -33,8 +33,10 @@ class SocketReader
         $rawPdus = [];
 
         do {
+            $this->reader->resetReadCount();
+
             $rawPdu    = $this->rawParser->parse($this->reader);
-            $rawPdus []= $rawPdu;
+            $rawPdus[] = $rawPdu;
         }
         while (! $rawPdu->isLastFragment());
 

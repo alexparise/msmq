@@ -7,7 +7,7 @@ abstract class AbstractReader implements Reader
 
     private $byteOrder;
 
-    public function __construct($byteOrder = ByteOrder::MACHINE)
+    public function __construct($byteOrder = ByteOrder::LITTLE_ENDIAN)
     {
         $this->byteOrder = $byteOrder;
     }

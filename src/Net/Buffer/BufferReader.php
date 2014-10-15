@@ -12,9 +12,12 @@ class BufferReader extends AbstractReader
 
     private $offset = 0;
 
-    public function __construct($dataBuffer)
+    private $throw = false;
+
+    public function __construct($dataBuffer, $throw = false)
     {
         $this->data = $dataBuffer;
+        $this->throw = (bool) $throw;
     }
 
     /**
@@ -25,6 +28,10 @@ class BufferReader extends AbstractReader
     public function read($length = 0)
     {
         if ($this->offset >= strlen($this->data)) {
+            if ($this->throw === true) {
+                throw new \RuntimeException('EOF');
+            }
+
             return false;
         }
 

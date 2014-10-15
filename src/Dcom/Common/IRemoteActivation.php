@@ -7,6 +7,11 @@ use Rhumsaa\Uuid\Uuid;
 use Aztech\Dcom\Marshalling\MarshalledBuffer;
 use Aztech\Dcom\Marshalling\UnmarshallingBuffer;
 use Aztech\Util\Guid;
+use Aztech\Dcom\Marshalling\Marshaller\OrpcThisMarshaller;
+use Aztech\Dcom\Marshalling\Marshaller\GuidMarshaller;
+use Aztech\Dcom\Marshalling\Marshaller\PrimitiveMarshaller;
+use Aztech\Net\DataTypes;
+use Aztech\Dcom\Marshalling\Marshaller\SizedByteArrayMarshaller;
 
 class IRemoteActivation extends CommonInterface
 {
@@ -20,42 +25,22 @@ class IRemoteActivation extends CommonInterface
         return Guid::fromString(self::IID);
     }
 
-    public function remoteActivation(Uuid $clsid, array $iids)
+    public function remoteActivation(Uuid $clsid, array $iids, array $protocolSequences)
     {
         $in = new MarshalledBuffer();
         $out = new UnmarshallingBuffer();
 
-        $writer = $in->getWriter();
-
-        $writer->write($this->getOrpcThis()->getBytes());
-
-        $buffer = $in->getWriter();
-
-        // DCOM
-        // ClsId
-        $buffer->write($clsid->getBytes());
-        // OBJREF Count ???
-        $buffer->writeUInt32(0);
-        // ??
-        $buffer->writeUInt32(0);
-        // Client imp level
-        $buffer->writeUInt32(0);
-        // Mode
-        $buffer->writeUInt32(0);
-        // IID count
-        $buffer->writeUInt32(count($iids));
-        // ???
-        $buffer->write(pack('H*', '803F140001000000'));
-
-        foreach ($iids as $iid) {
-            $buffer->write($iid->getBytes());
-        }
-
-        // RequestedProtSeq
-        $buffer->writeUInt32(1);
-        $buffer->writeUInt32(1);
-        // Type (tcp)
-        $buffer->writeUInt16(7);
+        $in->add(new OrpcThisMarshaller(), $this->getOrpcThis());
+        $in->add(new GuidMarshaller(), $clsid);
+        $in->add(new PrimitiveMarshaller(DataTypes::BYTES), "name");
+        $in->add(new SizedByteArrayMarshaller(), []);
+        $in->add(PrimitiveMarshaller::UInt32(), 0);
+        $in->add(PrimitiveMarshaller::UInt32(), 0);
+        $in->add(PrimitiveMarshaller::UInt32(), count($iids));
+        $in->add(new PrimitiveMarshaller(DataTypes::BYTES), pack('H*', '803F140001000000'));
+        $in->add(new GuidMarshaller(), $iids);
+        $in->add(PrimitiveMarshaller::UInt16(), count($protocolSequences));
+        $in->add(PrimitiveMarshaller::UInt16(), $protocolSequences);
 
         $response = $this->execute($this->client, 0x00, $in, $out);
     }

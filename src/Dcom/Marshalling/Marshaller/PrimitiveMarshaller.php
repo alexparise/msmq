@@ -11,6 +11,21 @@ use Aztech\Net\ByteOrder;
 class PrimitiveMarshaller implements Marshaller
 {
 
+    public static function Int64()
+    {
+        return new self(DataTypes::UINT64);
+    }
+
+    public static function Int32()
+    {
+        return new self(DataTypes::UINT32);
+    }
+
+    public static function Int16()
+    {
+        return new self(DataTypes::UINT16);
+    }
+
     public static function UInt64()
     {
         return new self(DataTypes::UINT64);
@@ -70,21 +85,21 @@ class PrimitiveMarshaller implements Marshaller
     {
         switch ($this->type) {
             case DataTypes::INT8:
-                return $reader->readInt8($value);
+                return $reader->readInt8();
             case DataTypes::INT16:
-                return $reader->readInt16($value);
+                return $reader->readInt16();
             case DataTypes::INT32:
-                return $reader->readInt32($value);
+                return $reader->readInt32();
             case DataTypes::INT64:
-                return $reader->readInt64($value);
+                return $reader->readInt64();
             case DataTypes::UINT8:
-                return $reader->readUInt8($value);
+                return $reader->readUInt8();
             case DataTypes::UINT16:
-                return $reader->readUInt16($value);
+                return $reader->readUInt16();
             case DataTypes::UINT32:
-                return $reader->readUInt32($value);
+                return $reader->readUInt32();
             case DataTypes::UINT64:
-                return $reader->readUInt64($value);
+                return $reader->readUInt64();
             case DataTypes::BYTES:
             default:
                 throw new \BadMethodCallException();

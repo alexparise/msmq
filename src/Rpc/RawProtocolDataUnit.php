@@ -9,6 +9,8 @@ interface RawProtocolDataUnit
 
     public function getPacketSize();
 
+    public function getFlags();
+
     public function getType();
 
     public function getVersion();

@@ -10,6 +10,8 @@ use Aztech\Dcom\Marshalling\MarshalledBuffer;
 use Aztech\Dcom\Marshalling\UnmarshallingBuffer;
 use Aztech\Dcom\Marshalling\Marshaller\GuidMarshaller;
 use Aztech\Util\Guid;
+use Aztech\Dcom\Marshalling\Marshaller\PrimitiveMarshaller;
+use Aztech\Dcom\Marshalling\Marshaller\OrpcThisMarshaller;
 
 class ISCMActivator extends CommonInterface
 {
@@ -32,10 +34,7 @@ class ISCMActivator extends CommonInterface
 
         $in->add(new OrpcThisMarshaller(), $this->getOrpcThis());
         $in->add(new GuidMarshaller(), $clsId);
-
-        $writer->write($this->getOrpcThis()->getBytes());
-        $writer->write($clsId->getBytes());
-        $writer->writeUInt32(0);
+        $in->add(PrimitiveMarshaller::UInt32(), 0);
 
         $this->execute($this->client, 0x03, $in, $out);
 
@@ -44,6 +43,13 @@ class ISCMActivator extends CommonInterface
 
     public function remoteCreateInstance($pUnkOuter, $pActProperties)
     {
+        $in = new MarshalledBuffer();
+        $out = new UnmarshallingBuffer();
 
+        $in->add(new OrpcThisMarshaller(), $this->getOrpcThis());
+
+        $this->execute($this->client, 0x04, $in, $out);
+
+        return $out;
     }
 }

@@ -49,6 +49,11 @@ class ServiceLocator
         return $activator;
     }
 
+    public function getBoundClient()
+    {
+        return $this->getClient();
+    }
+
     protected function getClient()
     {
         $bindings = null;

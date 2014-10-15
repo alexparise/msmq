@@ -46,7 +46,7 @@ class Client
     {
         srand(time());
 
-        return pack('V', rand(0, bcpow(2, 16)) + rand(0, bcpow(2, 32)));
+        return rand(0, bcpow(2, 16)) + rand(0, bcpow(2, 32));
     }
 
     public function getAuthenticationContext()

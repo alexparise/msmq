@@ -47,7 +47,10 @@ class ConnectionOrientedHandler implements ResponseHandler
                 $ack
             );
 
-            $this->client->request(new BindResponsePdu($verifier));
+            $response = new BindResponsePdu($verifier);
+            $response->setCallId($ack->getCallId());
+
+            $this->client->request($response);
         }
 
         return $ack;

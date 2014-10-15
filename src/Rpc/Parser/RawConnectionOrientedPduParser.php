@@ -25,7 +25,7 @@ class RawConnectionOrientedPduParser implements RawPduParser
         $packetSize = $buffer->readUInt16();
         $authSize   = $buffer->readUInt16();
 
-        while ($reader->getReadByteCount() != $packetSize) {
+        while ($packetSize > 0 && $reader->getReadByteCount() != $packetSize) {
             $bytes .= $reader->read($packetSize - $reader->getReadByteCount());
         }
 

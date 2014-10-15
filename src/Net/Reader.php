@@ -24,4 +24,5 @@ interface Reader
     public function readUInt64();
 
     public function getReadByteCount();
+
 }

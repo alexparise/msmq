@@ -6,7 +6,7 @@ use Aztech\Dcom\Marshalling\Marshaller;
 use Aztech\Net\Writer;
 use Aztech\Net\Reader;
 
-class OrcpThisMarshaller implements Marshaller
+class OrpcThisMarshaller implements Marshaller
 {
     public function marshall(Writer $writer, $value)
     {

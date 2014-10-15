@@ -129,7 +129,7 @@ class DcomInterface
 
     protected function parseResponse(ResponsePdu $response, UnmarshallingBuffer $out)
     {
-        $reader = new BufferReader($response->getBody());
+        $reader = new BufferReader($response->getBody(), true);
 
         $out->parseValues($reader);
     }

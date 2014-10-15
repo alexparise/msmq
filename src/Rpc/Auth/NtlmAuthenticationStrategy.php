@@ -23,9 +23,9 @@ class NtlmAuthenticationStrategy implements AuthenticationStrategy
 
     public function getVerifier($type, AuthenticationContext $context, ProtocolDataUnit $lastResponse = null)
     {
-        if ($context->getAuthLevel() == AuthenticationLevel::CONNECT) {
+        if ($context->getAuthLevel() >= AuthenticationLevel::CONNECT) {
             if ($type == PduType::BIND) {
-                return new NtlmNegotiateVerifier($this->client, $context);
+                return new NtlmNegotiateVerifier($context, $this->client->getNegotiatePacket());
             }
             elseif ($type == PduType::BIND_RESP && $lastResponse instanceof BindAckPdu) {
                 $challengeData = $lastResponse->getRawAuthData();
