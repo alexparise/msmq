@@ -11,6 +11,8 @@ use Aztech\Rpc\Pdu\ConnectionOriented\BindPdu;
 use Aztech\Rpc\Pdu\ConnectionOriented\BindNackPdu;
 use Aztech\Rpc\Pdu\ConnectionOriented\BindAckPdu;
 use Aztech\Rpc\Pdu\ConnectionOriented\BindResponsePdu;
+use Aztech\Rpc\Pdu\ConnectionOriented\FaultPdu;
+use Aztech\Rpc\NcaStatus;
 
 class ConnectionOrientedHandler implements ResponseHandler
 {
@@ -24,11 +26,19 @@ class ConnectionOrientedHandler implements ResponseHandler
         $this->authStrategy = $authStrategy;
     }
 
-    public function handleResponse(ProtocolDataUnit $request, ProtocolDataUnit $response)
+    public function handleResponseForBind(ProtocolDataUnit $request, ProtocolDataUnit $response)
     {
         if ($request instanceof BindPdu) {
             if ($response instanceof BindNackPdu) {
-                throw new \RuntimeException('Bind rejected (Reason : 0x' . dechex($response->getReason()) . ')', $response->getReason());
+                $errorCode = $response->getReason();
+                $format = 'Bind rejected : 0x%08x.';
+
+                $this->handleError(
+                    $errorCode,
+                    null,
+                    $format,
+                    $errorCode
+                );
             }
             elseif ($response instanceof BindAckPdu) {
                 return $this->respondToBindAck($response);
@@ -36,6 +46,31 @@ class ConnectionOrientedHandler implements ResponseHandler
         }
 
         throw new \RuntimeException('Invalid response type.');
+    }
+
+    public function handleResponse(ProtocolDataUnit $request, ProtocolDataUnit $response)
+    {
+        if ($response instanceof FaultPdu) {
+            $errorCode = $response->getErrorCode();
+            $format = 'RPC error : %s (0x%08x).';
+
+            $this->handleError(
+                $errorCode,
+                null,
+                $format,
+                NcaStatus::getErrorName($errorCode) ?: 'unknown',
+                $errorCode
+            );
+        }
+
+        return $response;
+    }
+
+    protected function handleError($errorCode, Exception $previous = null, $format)
+    {
+        $message = call_user_func_array('sprintf', array_slice(func_get_args(), 2));
+
+        throw new \RuntimeException($message, $errorCode, $previous);
     }
 
     protected function respondToBindAck(BindAckPdu $ack)

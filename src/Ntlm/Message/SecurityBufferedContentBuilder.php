@@ -64,10 +64,6 @@ class SecurityBufferedContentBuilder
         $content = new BufferWriter();
         $parts = $this->parts;
 
-        if ($this->reversed) {
-            //$parts = array_reverse($parts);
-        }
-
         foreach ($parts as $part) {
             $content->write($part);
         }

@@ -2,33 +2,27 @@
 
 namespace Aztech\Dcom\Common;
 
-use Aztech\Dcom\DcomInterface;
-use Rhumsaa\Uuid\Uuid;
 use Aztech\Dcom\Marshalling\MarshalledBuffer;
 use Aztech\Dcom\Marshalling\UnmarshallingBuffer;
-use Aztech\Net\Buffer\BufferReader;
-use Aztech\Net\DataTypes;
-use Aztech\Dcom\Marshalling\StringBinding;
-use Aztech\Dcom\Marshalling\SecurityBinding;
-use Aztech\Dcom\Marshalling\DualStringArray;
-use Aztech\Util\Text;
-use Aztech\Util\Guid;
 use Aztech\Dcom\Marshalling\Marshaller\ComVersionMarshaller;
 use Aztech\Dcom\Marshalling\Marshaller\DualStringArrayMarshaller;
-use Aztech\Dcom\Marshalling\Marshaller\PrimitiveMarshaller;
 use Aztech\Dcom\Marshalling\Marshaller\GuidMarshaller;
+use Aztech\Dcom\Marshalling\Marshaller\PrimitiveMarshaller;
+use Aztech\Util\Guid;
+use Aztech\Util\Text;
+use Rhumsaa\Uuid\Uuid;
 
 class IOxIdResolver extends CommonInterface
 {
     const IID = '{99fcfec4-5260-101b-bbcb-00aa0021347a}';
 
     private $ops = [
-       'ResolveOxId'   => 0x00,
-       'SimplePing'    => 0x01,
-       'ComplexPing'   => 0x02,
-       'ServerAlive'   => 0x03,
-       'ResolveOxId2'  => 0x04,
-       'ServerAlive2'  => 0x05
+       'resolveOxId'   => 0x00,
+       'simplePing'    => 0x01,
+       'complexPing'   => 0x02,
+       'serverAlive'   => 0x03,
+       'resolveOxId2'  => 0x04,
+       'serverAlive2'  => 0x05
     ];
 
     protected $noAuth = true;
@@ -38,39 +32,40 @@ class IOxIdResolver extends CommonInterface
         return Guid::fromString(self::IID);
     }
 
-    public function ResolveOxId($oxid, array $protocolSequences = [])
+    public function resolveOxId($oxid, array $protocolSequences = [])
     {
         //$this->noAuth = false;
 
-        $op = $this->ops[__FUNCTION__];
+        $opnum = $this->ops[__FUNCTION__];
 
-        $in = new MarshalledBuffer();
-        $out = new UnmarshallingBuffer();
+        $inBuffer = new MarshalledBuffer();
+        $outBuffer = new UnmarshallingBuffer();
 
-        $in->add(PrimitiveMarshaller::UInt64(), $oxid);
-        $in->add(PrimitiveMarshaller::UInt16(), count($protocolSequences));
-        $in->add(PrimitiveMarshaller::UInt16(), $protocolSequences);
+        $inBuffer->add(PrimitiveMarshaller::UInt64(), $oxid);
+        $inBuffer->add(PrimitiveMarshaller::UInt16(), count($protocolSequences));
+        $inBuffer->add(PrimitiveMarshaller::UInt16(), $protocolSequences);
 
-        $out->add(new DualStringArrayMarshaller());
-        $out->add(new GuidMarshaller());
-        $out->add(PrimitiveMarshaller::UInt32());
+        $outBuffer->add(new DualStringArrayMarshaller());
+        $outBuffer->add(new GuidMarshaller());
+        $outBuffer->add(PrimitiveMarshaller::UInt32());
 
-        return $this->execute($this->client, 0, $in, $out);
+        return $this->execute($this->client, $opnum, $inBuffer, $outBuffer);
     }
 
-    public function ServerAlive()
+    public function serverAlive()
     {
         return $this->execute($this->client, $this->ops[__FUNCTION__]);
     }
 
-    public function ServerAlive2(& $bindings)
+    public function serverAlive2(& $bindings)
     {
-        $out = new UnmarshallingBuffer();
+        $outBuffer = new UnmarshallingBuffer();
 
-        $out->add(new ComVersionMarshaller());
-        $out->add(new DualStringArrayMarshaller(), 8);
+        $outBuffer->add(new ComVersionMarshaller());
+        $outBuffer->add(new DualStringArrayMarshaller(), 8);
 
-        $response = $this->execute($this->client, $this->ops[__FUNCTION__], null, $out);
-        $bindings = $out->getValues()[1];
+        $this->execute($this->client, $this->ops[__FUNCTION__], null, $outBuffer);
+
+        $bindings = $outBuffer->getValues()[1];
     }
 }

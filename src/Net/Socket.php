@@ -31,7 +31,6 @@ interface Socket
      */
     public function readTimeout($bytes, $timeout = null);
 
-
     /**
      *
      * @param string $buffer

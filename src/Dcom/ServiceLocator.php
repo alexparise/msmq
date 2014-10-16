@@ -10,17 +10,21 @@ use Aztech\Dcom\Common\ISystemActivator;
 use Aztech\Dcom\Common\IRemoteActivation;
 use Aztech\Dcom\Common\IRemoteSCMActivator;
 use Aztech\Dcom\Common\ISCMActivator;
+use Aztech\Rpc\Factory;
 
 class ServiceLocator
 {
 
     private $client;
 
+    private $factory;
+
     private $resolver;
 
-    public function __construct(Client $client)
+    public function __construct(Client $client, Factory $factory)
     {
         $this->client = $client;
+        $this->factory = $factory;
         $this->resolver = new IOxIdResolver($client);
     }
 
@@ -58,18 +62,18 @@ class ServiceLocator
     {
         $bindings = null;
 
-        $this->resolver->ServerAlive2($bindings);
+        $this->resolver->serverAlive2($bindings);
 
         foreach ($bindings->getStringBindings() as $binding) {
+            $authProvider = $this->client->getAuthenticationProvider();
+            $port = 135; // FIXME
             $host = $binding->getNetworkAddress();
 
             if (filter_var($host, FILTER_VALIDATE_IP) === false) {
                 $host = gethostbyname($host);
             }
 
-            $port = 135; // FIXME
-
-            return new Client($this->client->getAuthenticationProvider(), $host, $port);
+            return $this->factory->getClient($authProvider, $host, $port);
         }
 
         throw new \RuntimeException('Unable to connect to service');

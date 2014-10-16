@@ -8,7 +8,7 @@ use Aztech\Ntlm\ServerChallenge;
 class Ntlm2Session implements ClientSession
 {
 
-    public function __construct($machine, $user, $userDomain, $password, $randomSessionKey)
+    public function __construct()
     {
         throw new \BadMethodCallException();
     }

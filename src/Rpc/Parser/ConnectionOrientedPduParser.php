@@ -9,6 +9,7 @@ use Aztech\Rpc\PduType;
 use Aztech\Rpc\Parser\ConnectionOriented\BindAckPduParser;
 use Aztech\Rpc\Parser\ConnectionOriented\BindNackPduParser;
 use Aztech\Rpc\Parser\ConnectionOriented\ResponsePduParser;
+use Aztech\Rpc\Parser\ConnectionOriented\FaultPduParser;
 
 class ConnectionOrientedPduParser implements PduParser
 {
@@ -20,8 +21,12 @@ class ConnectionOrientedPduParser implements PduParser
                 return (new BindAckPduParser())->parse($rawPdu);
             case PduType::BIND_NACK:
                 return (new BindNackPduParser())->parse($rawPdu);
+            case PduType::FAULT:
+                return (new FaultPduParser())->parse($rawPdu);
             case PduType::RESPONSE:
                 return (new ResponsePduParser())->parse($rawPdu);
         }
+
+        throw new \RuntimeException('Response type not handled.');
     }
 }

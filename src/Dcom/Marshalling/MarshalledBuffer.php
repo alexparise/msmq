@@ -21,6 +21,13 @@ class MarshalledBuffer
         $marshaller->marshall($this->writer, $value);
     }
 
+    public function align()
+    {
+        while ($this->writer->getBufferSize() % 4 !== 0) {
+            $this->writer->writeChr(0);
+        }
+    }
+
     public function getWriter()
     {
         return $this->writer;

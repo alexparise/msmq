@@ -34,7 +34,8 @@ class ISCMActivator extends CommonInterface
 
         $in->add(new OrpcThisMarshaller(), $this->getOrpcThis());
         $in->add(new GuidMarshaller(), $clsId);
-        $in->add(PrimitiveMarshaller::UInt32(), 0);
+        $in->add(PrimitiveMarshaller::UInt32(), count($iids));
+        $in->add(new GuidMarshaller(), $iids);
 
         $this->execute($this->client, 0x03, $in, $out);
 

@@ -17,6 +17,7 @@ use Aztech\Rpc\Auth\NullVerifier;
 use Aztech\Rpc\Auth\AuthenticationContext;
 use Aztech\Rpc\Auth\AuthenticationLevel;
 use Aztech\Util\Text;
+use Aztech\Rpc\Pdu\ConnectionOrientedPdu;
 
 class DcomInterface
 {
@@ -72,11 +73,11 @@ class DcomInterface
      *
      * @param Client $client
      * @param int $opNum
-     * @param MarshalledBuffer $in
+     * @param MarshalledBuffer $inBuffer
      * @param UnmarshallingBuffer $out
      * @return ResponsePdu
      */
-    protected function execute(Client $client, $opNum, MarshalledBuffer $in = null, UnmarshallingBuffer $out = null)
+    protected function execute(Client $client, $opNum, MarshalledBuffer $inBuffer = null, UnmarshallingBuffer $outBuffer = null)
     {
         if (! $this->binding) {
             $this->bind($client);
@@ -84,8 +85,8 @@ class DcomInterface
 
         $buffer = new BufferWriter();
 
-        if ($in) {
-            $buffer->write($in->getBytes());
+        if ($inBuffer) {
+            $buffer->write($inBuffer->getBytes());
         }
 
         $request = new RequestPdu($this->iid, $opNum, $this->verifier);
@@ -94,8 +95,8 @@ class DcomInterface
 
         $response = $client->requestResponse($request);
 
-        if ($response && $out) {
-            return $this->parseResponse($response, $out);
+        if ($response && $outBuffer) {
+            return $this->parseResponse($response, $outBuffer);
         }
 
         return $response;
@@ -127,10 +128,9 @@ class DcomInterface
         );
     }
 
-    protected function parseResponse(ResponsePdu $response, UnmarshallingBuffer $out)
+    protected function parseResponse(ConnectionOrientedPdu $response, UnmarshallingBuffer $outBuffer)
     {
         $reader = new BufferReader($response->getBody(), true);
-
-        $out->parseValues($reader);
+        $outBuffer->parseValues($reader);
     }
 }

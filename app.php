@@ -1,24 +1,11 @@
 <?php
 
-use Aztech\Rpc\Client as RpcClient;
-use Aztech\Ntlm\Client as NtlmClient;
-use Rhumsaa\Uuid\Uuid;
-use Aztech\Rpc\Pdu\ConnectionOriented\BindContext;
-use Aztech\Ntlm\Rpc\NtlmAuthenticationStrategy;
-use Aztech\Rpc\Pdu\ConnectionOriented\RequestPdu;
-use Aztech\Rpc\PduType;
-use Aztech\Dcom\DcomInterface;
-use Aztech\Dcom\Common\ISystemActivator;
-use Aztech\Dcom\Common\IOxIdResolver;
 use Aztech\Dcom\ServiceLocator;
-use Aztech\Net\DataTypes;
-use Aztech\Util\Guid;
-use Aztech\Dcom\Interfaces\IUnknown;
 use Aztech\Dcom\Common\EndPointMapper;
-use Aztech\Dcom\EndPointEntry;
 use Aztech\Dcom\Common\IRemoteActivation;
-use Aztech\Dcom\Common\ISCMActivator;
-use Aztech\Ntlm\Factory;
+use Aztech\Ntlm\Factory as NtlmFactory;
+use Aztech\Rpc\Factory;
+use Aztech\Util\Guid;
 
 require_once 'vendor/autoload.php';
 
@@ -26,29 +13,32 @@ $user = 'thibaud';
 $password = 'password';
 $domain = 'WORKGROUP';
 $workstation = 'VIRTWIN';
+$port = 135;
 
 try {
-    $auth = Factory::ntlmV1($user, $password, $domain, $workstation);
-    $client = new RpcClient($auth, $workstation, 135);
-    $locator = new ServiceLocator($client);
+    $authProvider = NtlmFactory::ntlmV1($user, $password, $domain, $workstation);
+    $factory = Factory::get(getenv('VERBOSE'));
+
+    $client = $factory->getClient($authProvider, $workstation, $port);
+    $locator = new ServiceLocator($client, $factory);
     //$activator = $locator->getISCMActivator();
 
-    $epMapper = new EndPointMapper($locator->getBoundClient());
+    /*$epMapper = new EndPointMapper($locator->getBoundClient());
     $handle = null;
     $entries = null;
 
-    $epMapper->ept_lookup(
+    $epMapper->eptLookup(
         0x00,
         Guid::null(),
         Guid::null(),
         500,
         $handle,
         $entries
-    );
+    );*/
 
     $exporter = $locator->getISCMActivator()->remoteGetClassObject(Guid::fromString('{00020812-0000-0000-C000-000000000046}'), [
         Guid::fromString(IRemoteActivation::IUNK)
-    ]);
+    ], [ 0x07 ]);
 
     $client->getSocket()->readTimeout(50, 1);
 }
@@ -56,10 +46,10 @@ catch (\Exception $ex) {
     echo "\033[31;1m" . PHP_EOL;
 
     echo "Caught exception : \033[33;1m" . PHP_EOL;
-    echo "\t" . ($ex->getMessage() ?: "<" . get_class($ex) . ">") . " (error code : " . $ex->getCode() . ")" . PHP_EOL . PHP_EOL;
-    echo "\033[0m";
-    echo "\t" . get_class($ex) . PHP_EOL;
-    echo "\tLine " . $ex->getLine();
+    echo "\t" . ($ex->getMessage() ?: "<" . get_class($ex) . ">") . PHP_EOL . PHP_EOL;
+    echo "\033[0;1m";
+    echo "\t" . get_class($ex) . " (" . $ex->getCode() . ")" . PHP_EOL;
+    echo "\t\033[0mLine " . $ex->getLine();
     echo " in " . $ex->getFile() . PHP_EOL;
 
     echo "\033[31;1m" . PHP_EOL;

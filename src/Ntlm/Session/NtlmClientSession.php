@@ -46,6 +46,7 @@ class NtlmClientSession implements ClientSession
     public function getNegotiationFlags()
     {
         return NTLMSSP::NEGOTIATE_KEY_EXCH
+               | NTLMSSP::NEGOTIATE_56
                | NTLMSSP::NEGOTIATE_128
                | NTLMSSP::NEGOTIATE_VERSION
                | NTLMSSP::TARGET_TYPE_SERVER

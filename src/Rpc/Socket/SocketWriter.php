@@ -177,6 +177,10 @@ class SocketWriter implements ProtocolDataUnitVisitor
         $writer = $this->buffer;
         $authPad = 0;
 
+        if (! count($pdu->getVerifier()->getContent()->getFields())) {
+            return;
+        }
+
         while ($writer->getBufferSize() % 4 != 0) {
             $writer->writeChr(0);
             $authPad++;

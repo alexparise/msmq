@@ -7,24 +7,24 @@ use Aztech\Util\Text;
 
 final class NtlmHash
 {
-    public static function des($k, $l)
+    public static function des($key, $data)
     {
-        if (strlen($k) !== 7) {
+        if (strlen($key) !== 7) {
             throw new \InvalidArgumentException('Key must be 7 bytes.');
         }
 
-        return Hash::encryptDes($k, $l);
+        return Hash::encryptDes($key, $data);
     }
 
-    public static function desl($k, $d)
+    public static function desl($key, $data)
     {
-        if (strlen($k) !== 16) {
+        if (strlen($key) !== 16) {
             throw new \InvalidArgumentException('Key must be 16 bytes.');
         }
 
-        $cipher  = Hash::encryptDes(Hash::convertKey(substr($k, 0, 7)), $d);
-        $cipher .= Hash::encryptDes(Hash::convertKey(substr($k, 7, 7)), $d);
-        $cipher .= Hash::encryptDes(Hash::convertKey(str_pad(substr($k, 14), 7, "\0")), $d);
+        $cipher  = Hash::encryptDes(Hash::convertKey(substr($key, 0, 7)), $data);
+        $cipher .= Hash::encryptDes(Hash::convertKey(substr($key, 7, 7)), $data);
+        $cipher .= Hash::encryptDes(Hash::convertKey(str_pad(substr($key, 14), 7, "\0")), $data);
 
         return $cipher;
     }
@@ -44,9 +44,9 @@ final class NtlmHash
         return Hash::hashLm($password);
     }
 
-    public static function rc4($k, $d)
+    public static function rc4($key, $data)
     {
-        return Hash::encryptRc4($k, $d);
+        return Hash::encryptRc4($key, $data);
     }
 
     public static function rand($bytes)
