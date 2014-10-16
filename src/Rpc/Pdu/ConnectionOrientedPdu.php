@@ -7,7 +7,7 @@ use Aztech\Rpc\PduFieldCollection;
 use Aztech\Rpc\ProtocolDataUnit;
 use Aztech\Rpc\Rpc;
 use Aztech\Rpc\DataRepresentationFormat;
-use Aztech\Rpc\AuthenticationVerifier;
+use Aztech\Rpc\Auth\AuthenticationVerifier;
 
 abstract class ConnectionOrientedPdu implements ProtocolDataUnit
 {

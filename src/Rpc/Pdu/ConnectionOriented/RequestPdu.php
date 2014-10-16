@@ -4,7 +4,7 @@ namespace Aztech\Rpc\Pdu\ConnectionOriented;
 
 use Aztech\Rpc\Pdu\ConnectionOrientedPdu;
 use Rhumsaa\Uuid\Uuid;
-use Aztech\Rpc\AuthenticationVerifier;
+use Aztech\Rpc\Auth\AuthenticationVerifier;
 use Aztech\Rpc\DataRepresentationFormat;
 use Aztech\Rpc\PduType;
 use Aztech\Rpc\ProtocolDataUnitVisitor;

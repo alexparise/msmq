@@ -34,8 +34,18 @@ class Socket implements SocketInterface
         return $this->socket->readRaw($bytes);
     }
 
+    public function readTimeout($bytes, $timeout = null)
+    {
+        return $this->socket->readTimeout($bytes, $timeout);
+    }
+
     public function writeRaw($buffer)
     {
         return $this->socket->writeRaw($buffer);
+    }
+
+    public function writeTimeout($buffer, $timeout = null)
+    {
+        return $this->socket->writeTimeout($buffer, $timeout);
     }
 }

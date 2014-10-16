@@ -28,6 +28,11 @@ class DebugSocket implements SocketInterface
         return new SocketWriter($this, ByteOrder::LITTLE_ENDIAN);
     }
 
+    public function readTimeout($bytes, $timeout = null)
+    {
+        return $this->socket->readTimeout($bytes, $timeout);
+    }
+
     public function readRaw($bytes)
     {
         $read = $this->socket->getReader()->read($bytes);
@@ -36,6 +41,11 @@ class DebugSocket implements SocketInterface
         Text::dumpHex($read);
 
         return $read;
+    }
+
+    public function writeTimeout($buffer, $timeout = null)
+    {
+        return $this->socket->writeTimeout($buffer, $timeout);
     }
 
     public function writeRaw($buffer)

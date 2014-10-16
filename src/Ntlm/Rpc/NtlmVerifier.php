@@ -1,12 +1,14 @@
 <?php
 
-namespace Aztech\Rpc\Auth;
+namespace Aztech\Ntlm\Rpc;
 
-use Aztech\Rpc\AuthenticationVerifier;
+use Aztech\Rpc\Auth\AuthenticationVerifier;
 use Aztech\Rpc\PduFieldCollection;
 use Aztech\Net\DataTypes;
 use Aztech\Rpc\ProtocolDataUnit;
 use Aztech\Ntlm\Session;
+use Aztech\Ntlm\ClientSession;
+use Aztech\Rpc\Auth\AuthenticationContext;
 
 class NtlmVerifier implements AuthenticationVerifier
 {
@@ -15,7 +17,7 @@ class NtlmVerifier implements AuthenticationVerifier
 
     private $session;
 
-    public function __construct(AuthenticationContext $context, Session $session)
+    public function __construct(AuthenticationContext $context, ClientSession $session)
     {
         $this->context = $context;
         $this->session = $session;
@@ -31,7 +33,6 @@ class NtlmVerifier implements AuthenticationVerifier
     public function getHeaders($padding)
     {
         $headers = new PduFieldCollection();
-        //return $headers;
 
         $headers->addField(DataTypes::UINT8, $this->context->getAuthType());
         $headers->addField(DataTypes::UINT8, $this->context->getAuthLevel());
@@ -48,7 +49,7 @@ class NtlmVerifier implements AuthenticationVerifier
         //return $fields;
 
         $fields->addField(DataTypes::UINT32, 0x0001);
-        $fields->addField(DataTypes::BYTES, $this->session->getKey());
+        $fields->addField(DataTypes::BYTES, $this->session->getSessionKey());
 
         return $fields;
     }

@@ -2,15 +2,15 @@
 
 namespace Aztech\Rpc\ResponseHandler;
 
-use Aztech\Rpc\ResponseHandler;
+use Aztech\Rpc\Client;
+use Aztech\Rpc\PduType;
 use Aztech\Rpc\ProtocolDataUnit;
+use Aztech\Rpc\ResponseHandler;
+use Aztech\Rpc\Auth\AuthenticationStrategy;
 use Aztech\Rpc\Pdu\ConnectionOriented\BindPdu;
 use Aztech\Rpc\Pdu\ConnectionOriented\BindNackPdu;
 use Aztech\Rpc\Pdu\ConnectionOriented\BindAckPdu;
-use Aztech\Rpc\Client;
 use Aztech\Rpc\Pdu\ConnectionOriented\BindResponsePdu;
-use Aztech\Rpc\AuthenticationStrategy;
-use Aztech\Rpc\PduType;
 
 class ConnectionOrientedHandler implements ResponseHandler
 {

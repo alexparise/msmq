@@ -1,6 +1,8 @@
 <?php
 
-namespace Aztech\Rpc;
+namespace Aztech\Rpc\Auth;
+
+use Aztech\Rpc\ProtocolDataUnit;
 
 interface AuthenticationVerifier
 {

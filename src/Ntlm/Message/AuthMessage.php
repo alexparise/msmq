@@ -12,25 +12,23 @@ use Aztech\Net\Buffer\BufferWriter;
 use Aztech\Ntlm\NtlmHash;
 use Aztech\Ntlm\ServerChallengeResponse;
 use Aztech\Ntlm\Session;
+use Aztech\Ntlm\ClientSession;
+use Aztech\Ntlm\Credentials;
 
 class AuthMessage implements Message
 {
 
-    private $challenge;
-
     private $challengeResponse;
+
+    private $credentials;
 
     private $flags;
 
-    private $session;
-
-    public function __construct(ServerChallengeResponse $challengeResponse, Session $session, $flags)
+    public function __construct(Credentials $credentials, ServerChallengeResponse $challengeResponse, $flags)
     {
         $this->challengeResponse = $challengeResponse;
-        $this->challenge = $challengeResponse->getChallenge();
+        $this->credentials = $credentials;
         $this->flags = $flags;
-        $this->session = $session;
-        $this->session->setKey($this->challengeResponse->getEncryptedSessionKey());
     }
 
     public function getType()
@@ -50,11 +48,11 @@ class AuthMessage implements Message
         $builder->add($this->challengeResponse->getLmChallengeResponse());
         $builder->add($this->challengeResponse->getNtlmChallengeResponse());
 
-        $sessionBuilder->add($this->session->getUserDomain(), true);
-        $sessionBuilder->add($this->session->getUser(), true);
-        $sessionBuilder->add($this->session->getMachine(), true);
+        $sessionBuilder->add($this->credentials->getUserDomain(), true);
+        $sessionBuilder->add($this->credentials->getUser(), true);
+        $sessionBuilder->add($this->credentials->getWorkstation(), true);
 
-        $keyBuilder->add($this->session->getKey());
+        $keyBuilder->add($this->challengeResponse->getEncryptedSessionKey());
 
         $sessionHeader = $sessionBuilder->getHeaders($offset += 20 + strlen($builder->getHeaders(0)));
         $sessionContent = $sessionBuilder->getContent($offset);
@@ -83,7 +81,6 @@ class AuthMessage implements Message
         $writer->write($sessionContent);
         $writer->write($content);
         $writer->write($key);
-
 
         return $writer->getBuffer();
     }

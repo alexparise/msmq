@@ -1,11 +1,11 @@
 <?php
 
-namespace Aztech\Rpc;
+namespace Aztech\Rpc\Auth;
 
 interface AuthenticationParser
 {
     /**
-     * 
+     *
      * @param string $bytes
      * @return AuthenticationVerifier
      */

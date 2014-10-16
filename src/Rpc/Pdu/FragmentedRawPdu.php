@@ -87,10 +87,8 @@ class FragmentedRawPdu implements RawProtocolDataUnit
             $packetSize .= min(0, $pdu->getPacketSize() - 24);
         }
 
-        $pdu = new RawConnectionOrientedPdu($bytes, $packetSize, $flags, $version, $type);
+        $pdus = [ new RawConnectionOrientedPdu($bytes, $packetSize, $flags, $version, $type) ];
 
-        Text::dumpHex($pdu->getBytes(), 'BYTES');
-
-        return [ $pdu ];
+        return $pdus;
     }
 }

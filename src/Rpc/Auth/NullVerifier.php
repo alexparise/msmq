@@ -2,11 +2,10 @@
 
 namespace Aztech\Rpc\Auth;
 
-use Aztech\Rpc\AuthenticationVerifier;
-use Aztech\Rpc\PduFieldCollection;
 use Aztech\Net\DataTypes;
-use Aztech\Rpc\ProtocolDataUnit;
 use Aztech\Ntlm\Session;
+use Aztech\Rpc\PduFieldCollection;
+use Aztech\Rpc\ProtocolDataUnit;
 
 class NullVerifier implements AuthenticationVerifier
 {

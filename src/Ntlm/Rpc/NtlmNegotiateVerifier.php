@@ -1,9 +1,10 @@
 <?php
 
-namespace Aztech\Rpc\Auth;
+namespace Aztech\Ntlm\Rpc;
 
 use Aztech\Ntlm\Client;
-use Aztech\Rpc\AuthenticationVerifier;
+use Aztech\Rpc\Auth\AuthenticationVerifier;
+use Aztech\Rpc\Auth\AuthenticationContext;
 use Aztech\Rpc\ProtocolDataUnit;
 use Aztech\Rpc\PduFieldCollection;
 use Aztech\Net\DataTypes;

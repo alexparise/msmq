@@ -1,6 +1,6 @@
 <?php
 
-namespace Aztech\Rpc;
+namespace Aztech\Rpc\Auth;
 
 interface AuthenticationStrategyProvider
 {

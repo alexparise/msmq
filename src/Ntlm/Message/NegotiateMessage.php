@@ -5,24 +5,18 @@ namespace Aztech\Ntlm\Message;
 use Aztech\Ntlm\Message;
 use Aztech\Ntlm\NTLMSSP;
 use Aztech\Net\Buffer\BufferWriter;
+use Aztech\Ntlm\Credentials;
 
 class NegotiateMessage implements Message
 {
 
-    private $domain;
-
-    private $machine;
+    private $credentials;
 
     private $flags;
 
-    public function __construct($domain, $machine, $flags)
+    public function __construct(Credentials $credentials, $flags)
     {
-        if (trim($domain) == '' || trim($machine) == '') {
-            throw new \InvalidArgumentException('Domain and machine name must be non empty strings.');
-        }
-
-        $this->domain = $domain;
-        $this->machine = $machine;
+        $this->credentials = $credentials;
         $this->flags = $flags;
     }
 
@@ -35,8 +29,8 @@ class NegotiateMessage implements Message
     {
         $builder = new SecurityBufferedContentBuilder();
 
-        $builder->add($this->domain);
-        $builder->add($this->machine);
+        $builder->add(trim($this->credentials->getDomain()));
+        $builder->add(trim($this->credentials->getWorkstation()));
 
         $writer = new BufferWriter();
 

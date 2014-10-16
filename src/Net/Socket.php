@@ -26,9 +26,24 @@ interface Socket
 
     /**
      *
+     * @param int $bytes
+     * @return string
+     */
+    public function readTimeout($bytes, $timeout = null);
+
+
+    /**
+     *
      * @param string $buffer
      * @return void
      */
     public function writeRaw($buffer);
 
+
+    /**
+     *
+     * @param string $buffer
+     * @return void
+     */
+    public function writeTimeout($buffer, $timeout = null);
 }

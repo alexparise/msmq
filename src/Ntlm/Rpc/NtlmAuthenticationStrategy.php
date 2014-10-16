@@ -1,11 +1,14 @@
 <?php
 
-namespace Aztech\Rpc\Auth;
+namespace Aztech\Ntlm\Rpc;
 
 use Aztech\Ntlm\Client;
-use Aztech\Rpc\AuthenticationStrategy;
 use Aztech\Rpc\PduType;
 use Aztech\Rpc\ProtocolDataUnit;
+use Aztech\Rpc\Auth\AuthenticationContext;
+use Aztech\Rpc\Auth\AuthenticationLevel;
+use Aztech\Rpc\Auth\AuthenticationStrategy;
+use Aztech\Rpc\Auth\NullVerifier;
 use Aztech\Rpc\Pdu\ConnectionOriented\BindAckPdu;
 
 class NtlmAuthenticationStrategy implements AuthenticationStrategy

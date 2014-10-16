@@ -9,11 +9,12 @@ use Aztech\Net\Socket\DebugSocket;
 use Aztech\Rpc\Socket\Socket;
 use Aztech\Rpc\Auth\AuthenticationContext;
 use Aztech\Rpc\Auth\AuthenticationLevel;
+use Aztech\Rpc\Auth\AuthenticationStrategyProvider;
+use Aztech\Rpc\Auth\AuthenticationStrategy;
+use Aztech\Rpc\Auth\NullVerifier;
 use Aztech\Rpc\Pdu\ConnectionOriented\BindAckPdu;
 use Aztech\Rpc\Pdu\ConnectionOriented\BindNackPdu;
-use Aztech\Rpc\ResponseHandler\ConnectionOrientedResponseHandler;
 use Aztech\Rpc\ResponseHandler\ConnectionOrientedHandler;
-use Aztech\Rpc\Auth\NullVerifier;
 
 class Client
 {
@@ -35,7 +36,7 @@ class Client
         }
 
         $this->dataFormat = new DataRepresentationFormat();
-        $this->socket = new Socket(new DebugSocket(new BaseSocket($host, $port)));
+        $this->socket = new Socket(new DebugSocket(new BaseSocket($host, $port, true)));
         $this->host = $host;
         $this->authProvider = $authProvider;
 
@@ -81,6 +82,11 @@ class Client
         $this->format = $format;
     }
 
+    public function getSocket()
+    {
+        return $this->socket;
+    }
+
     public function bind(BindContext $context)
     {
         $handler = new ConnectionOrientedHandler($this, $this->authStrategy);
@@ -91,7 +97,6 @@ class Client
 
         $request = new BindPdu($context, $verifier);
         $request->setCallId($context->getCallId());
-
         $response = $this->requestResponse($request);
 
         return $handler->handleResponse($request, $response);

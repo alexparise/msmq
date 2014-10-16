@@ -2,20 +2,21 @@
 
 namespace Aztech\Ntlm;
 
-use Aztech\Ntlm\Message\Parser as MessageParser;
-use Aztech\Ntlm\Message\ChallengeMessage;
-use Aztech\Util\Hash;
-use Aztech\Util\Text;
 use Aztech\Net\PacketWriter;
 use Aztech\Net\Buffer\BufferWriter;
+use Aztech\Ntlm\Message\AuthMessage;
+use Aztech\Ntlm\Message\ChallengeMessage;
+use Aztech\Ntlm\Message\Parser as MessageParser;
 use Aztech\Ntlm\Random\OpenSslGenerator;
-use Aztech\Rpc\AuthenticationStrategyProvider;
-use Aztech\Rpc\Auth\NtlmAuthenticationStrategy;
+use Aztech\Ntlm\Rpc\NtlmAuthenticationStrategy;
+use Aztech\Rpc\Auth\AuthenticationStrategyProvider;
+use Aztech\Util\Hash;
+use Aztech\Util\Text;
 
 class Client implements AuthenticationStrategyProvider
 {
 
-    private $generator;
+    private $authStrategy;
 
     private $messageFactory;
 
@@ -23,36 +24,28 @@ class Client implements AuthenticationStrategyProvider
 
     private $session;
 
-    private $password;
-
-    public function __construct($user, $password, $userDomain, $domain, $machine)
+    public function __construct(ClientSession $session)
     {
-        $this->generator = new OpenSslGenerator();
+        $this->authStrategy = new NtlmAuthenticationStrategy($this);
         $this->messageFactory = new MessageFactory();
         $this->messageParser = new MessageParser();
-        $this->password = $password;
-        $this->session = new Session($machine, $user, $userDomain);
-    }
-
-    public function getStrategy()
-    {
-        return new NtlmAuthenticationStrategy($this);
+        $this->session = $session;
     }
 
     public function getAuthPacket(ChallengeMessage $challenge)
     {
-        $header = $this->getHeader(NTLMSSP::MSG_AUTH);
-        $auth = $this->getAuthMessage($challenge);
+        $message = $this->getAuthMessage($challenge);
+        $header = $this->getHeader($message);
 
-        return $header . $auth->getContent(strlen($header));
+        return $header . $message->getContent(strlen($header));
     }
 
     public function getNegotiatePacket()
     {
-        $header = $this->getHeader(NTLMSSP::MSG_NEGOTIATE);
-        $packet = $this->messageFactory->negotiate($this->session->getUserDomain(), $this->session->getLocalMachine());
+        $message = $this->messageFactory->negotiate($this->session);
+        $header = $this->getHeader($message);
 
-        $message = $header . $packet->getContent(strlen($header));
+        $message = $header . $message->getContent(strlen($header));
 
         return $message;
     }
@@ -62,25 +55,40 @@ class Client implements AuthenticationStrategyProvider
         return $this->session;
     }
 
+    public function getStrategy()
+    {
+        return $this->authStrategy;
+    }
+
+    /**
+     *
+     * @param unknown $data
+     * @return \Aztech\Ntlm\Message\ChallengeMessage
+     */
     public function parseChallenge($data)
     {
         return $this->messageParser->parse($data);
     }
 
-    public function setGenerator(RandomGenerator $generator)
-    {
-        $this->generator = $generator;
-    }
-
+    /**
+     *
+     * @param ChallengeMessage $challenge
+     * @return AuthMessage
+     */
     private function getAuthMessage(ChallengeMessage $challenge)
     {
-        $auth = $this->messageFactory->authenticate($this->generator, $challenge, $this->session, $this->password);
+        $auth = $this->messageFactory->authenticate($this->session, $challenge);
 
         return $auth;
     }
 
-    private function getHeader($type)
+    /**
+     *
+     * @param int $type Type of auth message
+     * @return string
+     */
+    private function getHeader(Message $message)
     {
-        return NTLMSSP::SIGNATURE . chr(0) . pack('V', $type);
+        return NTLMSSP::SIGNATURE . chr(0) . pack('V', $message->getType());
     }
 }

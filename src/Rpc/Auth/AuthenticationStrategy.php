@@ -1,8 +1,8 @@
 <?php
 
-namespace Aztech\Rpc;
+namespace Aztech\Rpc\Auth;
 
-use Aztech\Rpc\Auth\AuthenticationContext;
+use Aztech\Rpc\ProtocolDataUnit;
 
 interface AuthenticationStrategy
 {
