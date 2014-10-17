@@ -4,7 +4,7 @@ namespace Aztech\Dcom;
 
 class Pointer
 {
-    private static $counter = 0;
+    protected  static $counter = 0;
 
     private $id;
 

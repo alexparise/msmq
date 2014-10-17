@@ -2,6 +2,7 @@
 
 namespace Aztech\Dcom;
 
+use Rhumsaa\Uuid\Uuid;
 abstract class ObjRef
 {
     const OBJREF_STANDARD = 0x00000001;

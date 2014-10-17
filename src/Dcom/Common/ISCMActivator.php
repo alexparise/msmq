@@ -17,6 +17,8 @@ class ISCMActivator extends CommonInterface
 {
     const IID = '{00000136-0000-0000-c000-000000000046}';
 
+    protected $noAuth = true;
+    
     protected function getIid()
     {
         return Guid::fromString(self::IID);

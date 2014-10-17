@@ -18,6 +18,9 @@ use Aztech\Dcom\ObjRef;
 use Aztech\Dcom\Marshalling\Marshaller\PointerMarshaller;
 use Aztech\Dcom\Pointer;
 use Aztech\Dcom\Marshalling\Marshaller\SizedArrayMarshaller;
+use Aztech\Dcom\MInterfacePointer;
+use Aztech\Dcom\ObjRef\ObjRefCustom;
+use Aztech\Dcom\Marshalling\Marshaller\MInterfacePointerMarshaller;
 
 class IRemoteActivation extends CommonInterface
 {
@@ -33,30 +36,19 @@ class IRemoteActivation extends CommonInterface
         return Guid::fromString(self::IID);
     }
 
-    public function remoteActivation(Uuid $clsid, array $iids, array $protocolSequences)
+    public function remoteActivation(Uuid $clsid, $objectName, MInterfacePointer $objectStorage, $implLevel, $mode)
     {
         $inBuffer = new MarshalledBuffer();
         $outBuffer = new UnmarshallingBuffer();
+        
+        $pObjectName = new Pointer($objectName);
 
         $inBuffer->add(new OrpcThisMarshaller(), $this->getOrpcThis());
-        $inBuffer->align();
         $inBuffer->add(new GuidMarshaller(), $clsid);
-        $inBuffer->align();
-        $inBuffer->add(new PointerMarshaller(new UnicodeStringMarshaller()), new Pointer("NAME"));
-        $inBuffer->align();
-        // Object storage
-        //    MInterface Ptr
-        $inBuffer->add(PrimitiveMarshaller::UInt32(), 2);
-        $inBuffer->add(PrimitiveMarshaller::UInt32(), 1);
-        $inBuffer->add(PrimitiveMarshaller::UInt32(), 16);
-        $inBuffer->add(PrimitiveMarshaller::UInt32(), 1);
-        $inBuffer->add(PrimitiveMarshaller::UInt32(), ObjRef::OBJREF_CUSTOM);
-
-        //$inBuffer->add(new PointerMarshaller(new SizedArrayMarshaller(new GuidMarshaller())), new Pointer($iids));
-        // OBJREF
-
-        $inBuffer->add(PrimitiveMarshaller::UInt32(), 2); // Client impl level
-        $inBuffer->add(PrimitiveMarshaller::UInt32(), 0); // Mode
+        $inBuffer->add(new PointerMarshaller(new UnicodeStringMarshaller()), $pObjectName);
+        $inBuffer->add(new MInterfacePointerMarshaller(), $objectStorage);
+        $inBuffer->add(PrimitiveMarshaller::UInt32(), $implLevel); // Client impl level
+        $inBuffer->add(PrimitiveMarshaller::UInt32(), $mode); // Mode
         $inBuffer->add(PrimitiveMarshaller::UInt32(), count($iids)); // Mode
 
         foreach($iids as $iid) {
